@@ -7,7 +7,7 @@
     "assets": [
       {
         "include": "common/templates/**/*",
-        "outDir": "dist/src"
+        "outDir": "dist"
       }
     ]
   }

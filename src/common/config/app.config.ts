@@ -12,6 +12,7 @@ const appConfig = {
   token_expire_time: process.env.TOKEN_EXPIRE_TIME,
   token_refresh_expire_time: process.env.TOKEN_REFRESH_EXPIRE_TIME,
   token_jwt_secret_key: process.env.TOKEN_JWT_SECRET_KEY,
+  token_password_reset_expire_time: process.env.TOKEN_RESET_PASSWORD_EXPIRE_TIME,
 }
 
 export {appConfig}

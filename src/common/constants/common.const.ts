@@ -1,1 +1,0 @@
-export const VALIDATION_STATUS_CODE = 402

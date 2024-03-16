@@ -17,8 +17,12 @@ export class UserLoginInformation extends CommonEntity {
   @Column({type: 'text', nullable: true})
   refresh_token: string
 
+  @ApiResponseProperty({type: String})
+  @Column({type: 'text', nullable: true})
+  reset_password_token: string
+
   // Define relations
-  @OneToOne(() => User)
+  @OneToOne(() => User, user => user.userLoginInfomation)
   @JoinColumn({name: 'user_id'})
   user: User
 }

@@ -2,16 +2,16 @@ import {ExecutionContext, Injectable, UnauthorizedException} from '@nestjs/commo
 import {AuthGuard} from '@nestjs/passport'
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class AdminJwtAuthGuard extends AuthGuard('admin-jwt') {
   canActivate(context: ExecutionContext) {
     return super.canActivate(context)
   }
 
-  handleRequest(err: any, user: any, info: any) {
-    if (err || !user) {
+  handleRequest(err: any, admin: any, info: any) {
+    if (err || !admin) {
       throw err || new UnauthorizedException(info.message)
     }
 
-    return user
+    return admin
   }
 }
