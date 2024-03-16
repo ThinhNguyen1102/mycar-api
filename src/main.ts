@@ -33,10 +33,10 @@ async function bootstrap() {
   // Set up Swagger
   const config = new DocumentBuilder()
     .addBearerAuth()
-    .setTitle('UGC API Documentation')
+    .setTitle('Mycar API Documentation')
     .setDescription('UGC API Documentation')
     .setVersion(appConfig.version)
-    .addTag('UGC')
+    .addTag('Mycar')
     .addServer(`${appConfig.domain}`)
     .build()
   const document = SwaggerModule.createDocument(app, config)
