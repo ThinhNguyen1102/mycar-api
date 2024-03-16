@@ -14,19 +14,19 @@ export class User extends CommonEntity {
   @Column({nullable: false, length: 255})
   email: string
 
-  @ApiResponseProperty({type: String})
-  @Column({nullable: false, length: 255})
+  @ApiResponseProperty({type: String, deprecated: true})
+  @Column({nullable: false, length: 255, select: false})
   hash_password: string
 
   @ApiResponseProperty({type: String})
   @Column({nullable: false, length: 12})
   phone_number: string
 
-  @ApiResponseProperty({type: UserRole})
+  @ApiResponseProperty({type: String, enum: UserRole})
   @Column({nullable: false, enum: UserRole, type: 'enum'})
   role: UserRole
 
-  @ApiResponseProperty({type: UserStatus})
+  @ApiResponseProperty({type: String, enum: UserStatus})
   @Column({nullable: false, enum: UserStatus, type: 'enum'})
   status: UserStatus
 

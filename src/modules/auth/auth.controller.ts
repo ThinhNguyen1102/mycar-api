@@ -15,6 +15,9 @@ import {VerifyQuery} from './dto/verify.query'
 import {SuccessRes} from 'src/common/types/response'
 import {ForgotPasswordReq} from './dto/forgot-password.req'
 import {ResetPasswordReq} from './dto/reset-password.req'
+import {LoginReq} from './dto/login.req'
+import {LoginRes} from './dto/login.res'
+import {RefreshTokenReq} from './dto/refresh-token.req'
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -79,5 +82,35 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async resetPassword(@Body() request: ResetPasswordReq) {
     return await this.authService.resetPassword(request)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: LoginRes,
+  })
+  @ApiOperation({
+    operationId: 'login',
+    summary: 'Login',
+    description: 'Login',
+  })
+  @Post('login')
+  @UsePipes(ValidationPipe)
+  async login(@Body() request: LoginReq) {
+    return await this.authService.login(request)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: LoginRes,
+  })
+  @ApiOperation({
+    operationId: 'refresh-token',
+    summary: 'Refresh token',
+    description: 'Refresh token',
+  })
+  @Post('refresh-token')
+  @UsePipes(ValidationPipe)
+  async refreshToken(@Body() {refresh_token}: RefreshTokenReq) {
+    return await this.authService.refreshToken(refresh_token)
   }
 }
