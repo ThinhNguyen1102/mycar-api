@@ -8,6 +8,10 @@
       {
         "include": "common/templates/**/*",
         "outDir": "dist"
+      },
+      {
+        "include": "contract/abis/**/*",
+        "outDir": "dist"
       }
     ]
   }

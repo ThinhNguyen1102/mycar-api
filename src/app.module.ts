@@ -7,6 +7,8 @@ import {TypeOrmModule} from '@nestjs/typeorm'
 import {MailerModule, PugAdapter} from '@nest-modules/mailer'
 import {join} from 'path'
 import {AuthModule} from './modules/auth/auth.module'
+import {ContractModule} from './modules/contract/contract.module'
+import {readJSONFile} from './utils/read-json-file'
 
 @Module({
   imports: [
@@ -52,9 +54,25 @@ import {AuthModule} from './modules/auth/auth.module'
       }),
       inject: [ConfigService],
     }),
+    ContractModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          constract_abi: await readJSONFile(join(__dirname, 'contract', 'abis', 'mycar-abi.json')),
+          constract_address: configService.get('contract.contract_address'),
+          rpc_provider_url: configService.get('contract.bsc_testnet_rpc'),
+          signer_private_key: configService.get('contract.signer_private_key'),
+          singer_address: configService.get('contract.signer_address'),
+          options: {
+            gasLimit: Number(configService.get('contract.gas_limit')),
+          },
+        }
+      },
+      inject: [ConfigService],
+    }),
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ConfigService],
 })
 export class AppModule {}
