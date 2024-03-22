@@ -9,6 +9,7 @@ import {join} from 'path'
 import {AuthModule} from './modules/auth/auth.module'
 import {ContractModule} from './modules/contract/contract.module'
 import {readJSONFile} from './utils/read-json-file'
+import {CarContractModule} from './modules/car-contract/car-contract.module'
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import {readJSONFile} from './utils/read-json-file'
       inject: [ConfigService],
     }),
     AuthModule,
+    CarContractModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

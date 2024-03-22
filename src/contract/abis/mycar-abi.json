@@ -3,10 +3,33 @@
   {
     "anonymous": false,
     "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"},
+      {"indexed": false, "internalType": "address", "name": "owner_address", "type": "address"},
+      {"indexed": false, "internalType": "string", "name": "owner_email", "type": "string"},
+      {"indexed": false, "internalType": "address", "name": "renter_address", "type": "address"},
+      {"indexed": false, "internalType": "string", "name": "renter_email", "type": "string"}
+    ],
+    "name": "ContractCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {"indexed": true, "internalType": "address", "name": "previousOwner", "type": "address"},
       {"indexed": true, "internalType": "address", "name": "newOwner", "type": "address"}
     ],
     "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"},
+      {"indexed": false, "internalType": "string", "name": "email", "type": "string"},
+      {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"},
+      {"indexed": false, "internalType": "address", "name": "sender", "type": "address"}
+    ],
+    "name": "PaymentReceived",
     "type": "event"
   },
   {

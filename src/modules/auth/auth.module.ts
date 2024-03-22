@@ -8,6 +8,8 @@ import {UserLoginInformation} from 'src/entities/user-login-informations.entity'
 import {TypeOrmModule} from '@nestjs/typeorm'
 import {UserRepository} from 'src/repositories/user.repository'
 import {UserLoginInformationRepository} from 'src/repositories/user-login-information.repository'
+import {JwtStrategy} from 'src/common/strategies/jwt.strategy'
+import {AdminJwtStrategy} from 'src/common/strategies/admin-jwt.strategy'
 
 @Module({
   imports: [
@@ -25,6 +27,12 @@ import {UserLoginInformationRepository} from 'src/repositories/user-login-inform
     TypeOrmModule.forFeature([User, UserLoginInformation]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserRepository, UserLoginInformationRepository],
+  providers: [
+    AuthService,
+    UserRepository,
+    UserLoginInformationRepository,
+    JwtStrategy,
+    AdminJwtStrategy,
+  ],
 })
 export class AuthModule {}
