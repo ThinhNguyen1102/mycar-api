@@ -47,8 +47,8 @@ export class ContractService {
   async pay() {
     try {
       const tx = await this.contract.functions.createContract(
-        2,
-        'acc1@gmail.com',
+        4,
+        'acc3@gmail.com',
         '0x2374d179C5f9fF0EAB3D4FAB8e9cF468a7b589fF',
         'acc2@gmail.com',
         '0xDaf584176486351708388B0aB2a67E2975b26989',
@@ -74,19 +74,73 @@ export class ContractService {
   }
 
   listentCarContractEvent() {
-    this.contract.on('PaymentReceived', (contract_id, owner, renter, amount, event) => {
-      console.log('here')
-      console.log('PaymentReceived', contract_id, owner, renter, amount, event)
+    this.contract.on('PaymentReceived', (contract_id, sender_email, amount, sender_address) => {
+      console.log('PaymentReceived')
+      console.log('contract_id:::', contract_id)
+      console.log('sender_email:::', sender_email)
+      console.log('amount:::', amount)
+      console.log('sender_address:::', sender_address)
+    })
+
+    this.contract.on(
+      'CarContractCreated',
+      (contract_id, owner_address, owner_email, renter_address, renter_email) => {
+        console.log('ContractCreated')
+        console.log('contract_id:::', contract_id)
+        console.log('owner_address:::', owner_address)
+        console.log('owner_email:::', owner_email)
+        console.log('renter_address:::', renter_address)
+        console.log('renter_email:::', renter_email)
+      },
+    )
+
+    this.contract.on('CarContractRefundedOwnerRejected', (contract_id, renter_amount) => {
+      console.log('CarContractRefundedOwnerRejected')
+      console.log('contract_id:::', contract_id)
+      console.log('renter_amount:::', renter_amount)
+    })
+
+    this.contract.on('CarContractRefundedOwnerCanceled', (contract_id, renter_amount) => {
+      console.log('CarContractRefundedOwnerCanceled')
+      console.log('contract_id:::', contract_id)
+      console.log('renter_amount:::', renter_amount)
+    })
+
+    this.contract.on(
+      'CarContractRefundedRenterCanceled',
+      (contract_id, renter_amount, owner_amount) => {
+        console.log('CarContractRefundedRenterCanceled')
+        console.log('contract_id:::', contract_id)
+        console.log('renter_amount:::', this._toNumber(renter_amount))
+        console.log('owner_amount:::', this._toNumber(owner_amount))
+      },
+    )
+
+    this.contract.on('CarContractRefunded', (contract_id, renter_amount, owner_amount) => {
+      console.log('CarContractRefunded')
+      console.log('contract_id:::', contract_id)
+      console.log('renter_amount:::', this._toNumber(renter_amount))
+      console.log('owner_amount:::', this._toNumber(owner_amount))
+    })
+
+    this.contract.on('CarContractStarted', contract_id => {
+      console.log('CarContractStarted')
+      console.log('contract_id:::', contract_id)
+    })
+
+    this.contract.on('CarContractEnded', contract_id => {
+      console.log('CarContractEnded')
+      console.log('contract_id:::', contract_id)
     })
   }
 
-  handleListContractResponse(response: any[]): CarContractSM[] {
+  private handleListContractResponse(response: any[]): CarContractSM[] {
     return response.map(r => {
       return this.handleContractResponse(r)
     })
   }
 
-  handleContractResponse(response: any[]): CarContractSM {
+  private handleContractResponse(response: any[]): CarContractSM {
     const carContractSm: CarContractSM = {
       contract_id: this._toNumber(response[0]),
       owner_address: response[1],
@@ -111,7 +165,7 @@ export class ContractService {
     return carContractSm
   }
 
-  _handleTransactionResponse = async (tx: TransactionResponse) => {
+  private _handleTransactionResponse = async (tx: TransactionResponse) => {
     const recept = await tx.wait()
     return recept
   }

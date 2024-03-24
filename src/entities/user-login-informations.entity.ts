@@ -22,7 +22,9 @@ export class UserLoginInformation extends CommonEntity {
   reset_password_token: string
 
   // Define relations
-  @OneToOne(() => User, user => user.userLoginInfomation)
+  @OneToOne(() => User, user => user.userLoginInfomation, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({name: 'user_id'})
   user: User
 }

@@ -6,6 +6,6 @@ export class CarContractService {
   constructor(private readonly contractService: ContractService) {}
 
   async getAllCarContract() {
-    return this.contractService.getCarContractWithId(1)
+    return this.contractService.pay()
   }
 }

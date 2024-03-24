@@ -3,4 +3,5 @@ export enum CarContractStatus {
   STARTED,
   ENDED,
   CANCELED,
+  REJECTED,
 }

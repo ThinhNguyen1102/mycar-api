@@ -9,7 +9,61 @@
       {"indexed": false, "internalType": "address", "name": "renter_address", "type": "address"},
       {"indexed": false, "internalType": "string", "name": "renter_email", "type": "string"}
     ],
-    "name": "ContractCreated",
+    "name": "CarContractCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"}
+    ],
+    "name": "CarContractEnded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "renter_amount", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "owner_amount", "type": "uint256"}
+    ],
+    "name": "CarContractRefunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "renter_amount", "type": "uint256"}
+    ],
+    "name": "CarContractRefundedOwnerCanceled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "renter_amount", "type": "uint256"}
+    ],
+    "name": "CarContractRefundedOwnerRejected",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "renter_amount", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "owner_amount", "type": "uint256"}
+    ],
+    "name": "CarContractRefundedRenterCanceled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "contract_id", "type": "uint256"}
+    ],
+    "name": "CarContractStarted",
     "type": "event"
   },
   {
@@ -230,7 +284,14 @@
   },
   {
     "inputs": [{"internalType": "uint256", "name": "contract_id", "type": "uint256"}],
-    "name": "refundOwnerCanceled",
+    "name": "refund",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "contract_id", "type": "uint256"}],
+    "name": "refundOwnerCancel",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -241,16 +302,23 @@
       {"internalType": "address", "name": "renter_address", "type": "address"},
       {"internalType": "uint256", "name": "amount", "type": "uint256"}
     ],
-    "name": "refundOwnerRejected",
+    "name": "refundOwnerReject",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [{"internalType": "uint256", "name": "contract_id", "type": "uint256"}],
-    "name": "refundRenterCanceled",
+    "name": "refundRenterCancel",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "refund_rate",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -276,6 +344,13 @@
       {"internalType": "address", "name": "account", "type": "address"}
     ],
     "name": "revokeRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "rate", "type": "uint256"}],
+    "name": "setRefundRate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
