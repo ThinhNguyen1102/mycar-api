@@ -1,11 +1,11 @@
 import {Entity, JoinColumn, ManyToOne, PrimaryColumn} from 'typeorm'
 import {ApiResponseProperty} from '@nestjs/swagger'
-import {TimestampEntity} from './common.entity'
+import {NotSelectTimestampEntity} from './common.entity'
 import {CarRentalPost} from './car-rental-post.entity'
 import {CarFeature} from './car-feature.entity'
 
 @Entity({name: 'car_rental_post_features'})
-export class CarRentalPostFeature extends TimestampEntity {
+export class CarRentalPostFeature extends NotSelectTimestampEntity {
   @ApiResponseProperty({type: Number})
   @PrimaryColumn({type: Number, nullable: false})
   post_id: number

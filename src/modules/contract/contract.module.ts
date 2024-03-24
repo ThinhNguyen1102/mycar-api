@@ -1,8 +1,11 @@
 import {DynamicModule, Global, Module} from '@nestjs/common'
 import {CONTRACT_CONFIG_TOKEN, ContractAsyncOptions} from 'src/common/types/contract'
 import {ContractService} from './contract.service'
-import {Web3Module} from 'nest-web3'
-import {ConfigModule, ConfigService} from '@nestjs/config'
+import {TypeOrmModule} from '@nestjs/typeorm'
+import {CarContract} from 'src/entities/car-contract.entity'
+import {CarContractRepository} from 'src/repositories/car-contract.repository'
+import {User} from 'src/entities/user.entity'
+import {UserRepository} from 'src/repositories/user.repository'
 
 @Global()
 @Module({})
@@ -10,16 +13,7 @@ export class ContractModule {
   static registerAsync(contractOptions: ContractAsyncOptions): DynamicModule {
     return {
       module: ContractModule,
-      imports: [
-        Web3Module.forRootAsync({
-          imports: [ConfigModule],
-          useFactory: (configService: ConfigService) => ({
-            name: 'bsc-testnet',
-            url: configService.get('contract.bsc_testnet_rpc'),
-          }),
-          inject: [ConfigService],
-        }),
-      ],
+      imports: [TypeOrmModule.forFeature([User, CarContract])],
       providers: [
         {
           provide: CONTRACT_CONFIG_TOKEN,
@@ -27,6 +21,8 @@ export class ContractModule {
           inject: contractOptions.inject,
         },
         ContractService,
+        CarContractRepository,
+        UserRepository,
       ],
       exports: [ContractService],
     }

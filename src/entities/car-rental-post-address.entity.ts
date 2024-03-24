@@ -1,10 +1,10 @@
 import {Column, Entity, JoinColumn, OneToOne} from 'typeorm'
-import {CommonEntity} from './common.entity'
+import {NotSelectTimestampCommonEntity} from './common.entity'
 import {ApiResponseProperty} from '@nestjs/swagger'
 import {CarRentalPost} from './car-rental-post.entity'
 
 @Entity({name: 'car_rental_post_addresses'})
-export class CarRentalPostAddress extends CommonEntity {
+export class CarRentalPostAddress extends NotSelectTimestampCommonEntity {
   @ApiResponseProperty({type: Number})
   @Column({type: Number, nullable: false})
   post_id: number

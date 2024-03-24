@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common'
+import {BadRequestException, Injectable} from '@nestjs/common'
 import {CarRentalPostRepository} from 'src/repositories/car-rental-post.repository'
 import {CreateCarRentalPostReq} from './dto/create-car-rental-post.req'
 import {User} from 'src/entities/user.entity'
@@ -64,5 +64,33 @@ export class CarRentalPostService {
       .execute()
 
     return carRentalPostSaved
+  }
+
+  async getCarRentalPostDetail(post_id: number) {
+    const carRentalPost = await this.carRentalPostRepository
+      .createQueryBuilder('crp')
+      .where('crp.id = :id', {id: post_id})
+      .leftJoinAndSelect('crp.owner', 'owner')
+      .leftJoinAndSelect('crp.carImages', 'carImages')
+      .leftJoinAndSelect('crp.carRentalPostAddress', 'carRentalPostAddress')
+      .leftJoinAndSelect('crp.carRentalPostFeatures', 'carRentalPostFeatures')
+      .leftJoinAndSelect('carRentalPostFeatures.carFeature', 'carFeature')
+      .getOne()
+
+    if (!carRentalPost) {
+      throw new BadRequestException('Car rental post not found')
+    }
+
+    return {
+      ...carRentalPost,
+      carRentalPostFeatures: carRentalPost.carRentalPostFeatures.map(
+        feature => feature.carFeature.detail,
+      ),
+      carImages: carRentalPost.carImages.map(image => image.image_url),
+      carRentalPostAddress: {
+        district_name: carRentalPost.carRentalPostAddress.district_name,
+        prefecture_name: carRentalPost.carRentalPostAddress.prefecture_name,
+      },
+    }
   }
 }

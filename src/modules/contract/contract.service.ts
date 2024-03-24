@@ -1,8 +1,11 @@
 import {TransactionResponse} from '@ethersproject/abstract-provider'
 import {Inject, Injectable} from '@nestjs/common'
 import {BigNumber, ethers} from 'ethers'
+import {CarContractStatus} from 'src/common/enums/car-contract.enum'
 import {CONTRACT_CONFIG_TOKEN, ContractConfig} from 'src/common/types/contract'
 import {CarContractSM} from 'src/contract/types'
+import {CarContractRepository} from 'src/repositories/car-contract.repository'
+import {UserRepository} from 'src/repositories/user.repository'
 
 @Injectable()
 export class ContractService {
@@ -11,7 +14,11 @@ export class ContractService {
   private signer: ethers.Wallet
   private options: Record<string, any>
 
-  constructor(@Inject(CONTRACT_CONFIG_TOKEN) contractConfig: ContractConfig) {
+  constructor(
+    @Inject(CONTRACT_CONFIG_TOKEN) contractConfig: ContractConfig,
+    private readonly carContractRepository: CarContractRepository,
+    private readonly userRepositoy: UserRepository,
+  ) {
     this.provider = new ethers.providers.JsonRpcProvider(contractConfig.rpc_provider_url)
     this.signer = new ethers.Wallet(contractConfig.signer_private_key, this.provider)
     this.contract = new ethers.Contract(
@@ -78,13 +85,97 @@ export class ContractService {
   }
 
   listentCarContractEvent() {
-    this.contract.on('PaymentReceived', (contract_id, sender_email, amount, sender_address) => {
-      console.log('PaymentReceived')
-      console.log('contract_id:::', contract_id)
-      console.log('sender_email:::', sender_email)
-      console.log('amount:::', amount)
-      console.log('sender_address:::', sender_address)
-    })
+    this.contract.on(
+      'PaymentReceived',
+      async (contract_id, sender_email, amount, sender_address) => {
+        contract_id = this._toNumber(contract_id)
+        amount = this._toNumber(amount)
+        console.log('PaymentReceived')
+        console.log('contract_id:::', contract_id)
+        console.log('sender_email:::', sender_email)
+        console.log('amount:::', amount)
+        console.log('sender_address:::', sender_address)
+
+        let invalidPayment = true
+        let isOwnerPayment = false
+
+        const user = await this.userRepositoy.findOne({where: {email: sender_email}})
+        if (!user) {
+          console.log("PaymentReceived::: user doesn't exist")
+          invalidPayment = false
+        }
+
+        const carContract = await this.carContractRepository.findOne({where: {id: contract_id}})
+        const {
+          contract_status,
+          renter_id,
+          owner_id,
+          renter_wallet_address,
+          owner_wallet_address,
+          mortgage,
+          price_per_day,
+          num_of_days,
+        } = carContract
+
+        if (!carContract) {
+          console.log("PaymentReceived::: Car contract doesn't exist")
+          invalidPayment = false
+        }
+
+        if (contract_status !== CarContractStatus.WAITING_APPROVAL) {
+          console.log('PaymentReceived::: invalid contract status')
+          invalidPayment = false
+        }
+
+        if (renter_id !== user.id && owner_id !== user.id) {
+          console.log('PaymentReceived::: invalid user')
+          invalidPayment = false
+        }
+
+        if (owner_id === user.id) {
+          isOwnerPayment = true
+        }
+
+        if (isOwnerPayment) {
+          const ownerAmount = price_per_day * num_of_days * 0.25
+          if (amount !== ownerAmount) {
+            console.log('PaymentReceived::: invalid amount')
+            invalidPayment = false
+          } else if (renter_wallet_address && renter_wallet_address === sender_address) {
+            console.log('PaymentReceived::: invalid renter address')
+            invalidPayment = false
+          } else {
+            carContract.owner_wallet_address = sender_address
+          }
+        } else {
+          const renterAmount = price_per_day * num_of_days + mortgage
+
+          if (amount !== renterAmount) {
+            console.log('PaymentReceived::: invalid amount')
+            invalidPayment = false
+          } else if (owner_wallet_address && owner_wallet_address === sender_address) {
+            console.log('PaymentReceived::: invalid renter address')
+            invalidPayment = false
+          }
+          {
+            carContract.renter_wallet_address = sender_address
+          }
+        }
+
+        if (invalidPayment) {
+          const isCompletedPayment =
+            carContract.owner_wallet_address && carContract.renter_wallet_address
+          if (isCompletedPayment) {
+            carContract.contract_status = CarContractStatus.APPROVED
+          }
+
+          await this.carContractRepository.save(carContract)
+          // send message to frontend
+        } else {
+          // send message to frontend
+        }
+      },
+    )
 
     this.contract.on(
       'CarContractCreated',

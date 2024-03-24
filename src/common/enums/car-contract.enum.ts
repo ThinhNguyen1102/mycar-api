@@ -1,7 +1,8 @@
 export enum CarContractStatus {
-  APPROVED,
-  STARTED,
-  ENDED,
-  CANCELED,
-  REJECTED,
+  APPROVED = 'approved',
+  STARTED = 'started',
+  ENDED = 'ended',
+  CANCELED = 'canceled',
+  REJECTED = 'rejected',
+  WAITING_APPROVAL = 'waiting_approval',
 }

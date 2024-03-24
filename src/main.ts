@@ -5,10 +5,13 @@ import {appConfig} from './common/config/app.config'
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger'
 import configuration from './common/config/configuration'
 import {ValidationPipe} from '@nestjs/common'
+import {useContainer} from 'class-validator'
 dotenv.config()
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+
+  useContainer(app.select(AppModule), {fallback: true, fallbackOnErrors: true})
 
   app.setGlobalPrefix(`${appConfig.prefix}/${appConfig.version}`)
 

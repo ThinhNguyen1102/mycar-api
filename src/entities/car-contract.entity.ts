@@ -41,11 +41,11 @@ export class CarContract extends CommonEntity {
   end_date: Date
 
   @ApiResponseProperty({type: String})
-  @Column({type: String, nullable: false})
+  @Column({type: String, nullable: true})
   renter_wallet_address: string
 
   @ApiResponseProperty({type: String})
-  @Column({type: String, nullable: false})
+  @Column({type: String, nullable: true})
   owner_wallet_address: string
 
   @ApiResponseProperty({type: String})
