@@ -15,7 +15,7 @@ export class CarRentalPost extends CommonEntity {
   @Column({type: Number, nullable: false})
   owner_id: number
 
-  @ApiResponseProperty({type: CarRentalPostStatus})
+  @ApiResponseProperty({type: CarRentalPostStatus, enum: CarRentalPostStatus})
   @Column({type: 'enum', enum: CarRentalPostStatus, nullable: false})
   post_status: CarRentalPostStatus
 
@@ -27,7 +27,7 @@ export class CarRentalPost extends CommonEntity {
   @Column({type: Number, nullable: false})
   seats: number
 
-  @ApiResponseProperty({type: Fuel})
+  @ApiResponseProperty({type: Fuel, enum: Fuel})
   @Column({type: 'enum', enum: Fuel, nullable: false})
   fuel: Fuel
 
@@ -35,7 +35,7 @@ export class CarRentalPost extends CommonEntity {
   @Column({type: 'text', nullable: false})
   description: string
 
-  @ApiResponseProperty({type: Transmission})
+  @ApiResponseProperty({type: Transmission, enum: Transmission})
   @Column({type: 'enum', enum: Transmission, nullable: false})
   transmission: Transmission
 
@@ -48,27 +48,27 @@ export class CarRentalPost extends CommonEntity {
   license_plate: string
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   price_per_day: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   mortgage: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   over_limit_fee: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   over_time_fee: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   cleaning_fee: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   deodorization_fee: number
 
   // relation

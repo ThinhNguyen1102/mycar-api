@@ -10,6 +10,7 @@ import {AuthModule} from './modules/auth/auth.module'
 import {ContractModule} from './modules/contract/contract.module'
 import {readJSONFile} from './utils/read-json-file'
 import {CarContractModule} from './modules/car-contract/car-contract.module'
+import {CarRentaPostModule} from './modules/car-rental-post/car-rental-post.module'
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import {CarContractModule} from './modules/car-contract/car-contract.module'
     }),
     AuthModule,
     CarContractModule,
+    CarRentaPostModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

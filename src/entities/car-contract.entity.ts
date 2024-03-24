@@ -53,27 +53,27 @@ export class CarContract extends CommonEntity {
   car_info_snapshot: string
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   price_per_day: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   mortgage: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   over_limit_fee: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   over_time_fee: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   cleaning_fee: number
 
   @ApiResponseProperty({type: Number})
-  @Column({type: Number, nullable: false})
+  @Column({type: 'double precision', nullable: false})
   deodorization_fee: number
 
   @ApiResponseProperty({type: Number})
