@@ -1,7 +1,13 @@
-import {Column, Entity} from 'typeorm'
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from 'typeorm'
 import {CommonEntity} from './common.entity'
 import {ApiResponseProperty} from '@nestjs/swagger'
 import {CarRentalPostStatus, Fuel, Transmission} from 'src/common/enums/car-rental-post.enum'
+import {CarRentalPostAddress} from './car-rental-post-address.entity'
+import {CarImage} from './car-image.entity'
+import {CarRentalPostFeature} from './car-rental-post-feature.entity'
+import {User} from './user.entity'
+import {CarContract} from './car-contract.entity'
+import {Review} from './review.entity'
 
 @Entity({name: 'car_rental_posts'})
 export class CarRentalPost extends CommonEntity {
@@ -64,4 +70,26 @@ export class CarRentalPost extends CommonEntity {
   @ApiResponseProperty({type: Number})
   @Column({type: Number, nullable: false})
   deodorization_fee: number
+
+  // relation
+  @OneToOne(() => CarRentalPostAddress, carRentalPostAddress => carRentalPostAddress.carRentalPost)
+  carRentalPostAddress: CarRentalPostAddress
+
+  @OneToMany(() => CarImage, carImage => carImage.carRentalPost)
+  carImages: CarImage[]
+
+  @OneToMany(() => CarRentalPostFeature, carRentalPostFeature => carRentalPostFeature.carRentalPost)
+  carRentalPostFeatures: CarRentalPostFeature[]
+
+  @OneToMany(() => CarContract, carContract => carContract.carRentalPost)
+  carContracts: CarContract[]
+
+  @OneToMany(() => Review, review => review.carRentalPost)
+  reviews: Review[]
+
+  @ManyToOne(() => User, user => user.carRentalPosts, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({name: 'owner_id'})
+  owner: User
 }

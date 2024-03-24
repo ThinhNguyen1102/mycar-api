@@ -1,10 +1,10 @@
-import {Controller, Get, HttpStatus, UseGuards} from '@nestjs/common'
+import {Controller, Get, HttpStatus, Post, UseGuards} from '@nestjs/common'
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger'
 import {CarContractService} from './car-contract.service'
 import {JwtAuthGuard} from 'src/common/guards/jwt-auth.guard'
 
 @ApiTags('Contract')
-@Controller('contracts')
+@Controller('car-contracts')
 export class CarContractController {
   constructor(private readonly carContractService: CarContractService) {}
 
@@ -22,4 +22,17 @@ export class CarContractController {
   async getAllCarContract() {
     return await this.carContractService.getAllCarContract()
   }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'create-car-contract',
+    summary: 'Create car contract',
+    description: 'Create car contract',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('')
+  async createCarContact() {}
 }

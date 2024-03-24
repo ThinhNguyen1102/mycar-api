@@ -1,20 +1,24 @@
-import {Column, Entity, JoinColumn, ManyToOne} from 'typeorm'
+import {Column, Entity, JoinColumn, OneToOne} from 'typeorm'
 import {CommonEntity} from './common.entity'
 import {ApiResponseProperty} from '@nestjs/swagger'
 import {CarRentalPost} from './car-rental-post.entity'
 
-@Entity({name: 'car_images'})
-export class CarImage extends CommonEntity {
+@Entity({name: 'car_rental_post_addresses'})
+export class CarRentalPostAddress extends CommonEntity {
   @ApiResponseProperty({type: Number})
   @Column({type: Number, nullable: false})
   post_id: number
 
   @ApiResponseProperty({type: String})
   @Column({type: String, nullable: false})
-  image_url: string
+  district_name: string
+
+  @ApiResponseProperty({type: String})
+  @Column({type: String, nullable: false})
+  prefecture_name: string
 
   // relation
-  @ManyToOne(() => CarRentalPost, carRentalPost => carRentalPost.carImages, {
+  @OneToOne(() => CarRentalPost, carRentalPost => carRentalPost.carRentalPostAddress, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({name: 'post_id'})

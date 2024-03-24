@@ -1,14 +1,15 @@
-import {Entity, PrimaryColumn} from 'typeorm'
+import {Column, Entity, OneToMany} from 'typeorm'
+import {CommonEntity} from './common.entity'
 import {ApiResponseProperty} from '@nestjs/swagger'
-import {TimestampEntity} from './common.entity'
+import {CarRentalPostFeature} from './car-rental-post-feature.entity'
 
-@Entity({name: 'car_rental_post_features'})
-export class CarRentalPostFeature extends TimestampEntity {
-  @ApiResponseProperty({type: Number})
-  @PrimaryColumn({type: Number, nullable: false})
-  post_id: number
+@Entity({name: 'car_features'})
+export class CarFeature extends CommonEntity {
+  @ApiResponseProperty({type: String})
+  @Column({type: String, nullable: false})
+  detail: string
 
-  @ApiResponseProperty({type: Number})
-  @PrimaryColumn({type: Number, nullable: false})
-  car_feature_id: number
+  // relation
+  @OneToMany(() => CarRentalPostFeature, carRentalPostFeature => carRentalPostFeature.carRentalPost)
+  carRentalPostFeatures: CarRentalPostFeature[]
 }

@@ -1,7 +1,12 @@
-import {Column, Entity} from 'typeorm'
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from 'typeorm'
 import {CommonEntity} from './common.entity'
 import {ApiResponseProperty} from '@nestjs/swagger'
 import {CarContractStatus} from 'src/common/enums/car-contract.enum'
+import {CarRentalPost} from './car-rental-post.entity'
+import {Review} from './review.entity'
+import {ContractFulfillment} from './contract-fulfillment.entity'
+import {ContractTxHistory} from './contract-tx-history.entity'
+import {User} from './user.entity'
 
 @Entity({name: 'car_contracts'})
 export class CarContract extends CommonEntity {
@@ -74,4 +79,32 @@ export class CarContract extends CommonEntity {
   @ApiResponseProperty({type: Number})
   @Column({type: Number, nullable: false})
   num_of_days: number
+
+  // relation
+  @ManyToOne(() => CarRentalPost, carRentalPost => carRentalPost.carContracts, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({name: 'post_id'})
+  carRentalPost: CarRentalPost
+
+  @OneToMany(() => Review, review => review.carContract)
+  reviews: Review[]
+
+  @OneToOne(() => ContractFulfillment, contractFulfillment => contractFulfillment.carContract)
+  contractFulfillment: ContractFulfillment
+
+  @OneToMany(() => ContractTxHistory, contractTxHistory => contractTxHistory.carContract)
+  contractTxHistories: ContractTxHistory[]
+
+  @ManyToOne(() => User, user => user.ownedContracts, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({name: 'owner_id'})
+  owner: User
+
+  @ManyToOne(() => User, user => user.rentedContracts, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({name: 'renter_id'})
+  renter: User
 }

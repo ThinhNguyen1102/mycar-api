@@ -24,6 +24,39 @@ export class ContractService {
     this.listentCarContractEvent()
   }
 
+  async createCarContact(carContract: CarContractSM) {
+    try {
+      try {
+        const tx = await this.contract.functions.createContract(
+          carContract.contract_id,
+          carContract.owner_email,
+          carContract.owner_address,
+          carContract.renter_email,
+          carContract.renter_address,
+          this._toWei(carContract.rental_price_per_day),
+          this._toWei(carContract.over_limit_fee),
+          this._toWei(carContract.over_time_fee),
+          this._toWei(carContract.cleaning_fee),
+          this._toWei(carContract.deodorization_fee),
+          carContract.num_of_days,
+          carContract.start_date.getTime(),
+          carContract.end_date.getTime(),
+          carContract.car_model,
+          carContract.car_plate,
+          {
+            ...this.options,
+          },
+        )
+
+        return this._handleTransactionResponse(tx)
+      } catch (e) {
+        console.log(e)
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async getAllCarContract() {
     try {
       const response = await this.contract.functions.getCarContracts()
@@ -39,35 +72,6 @@ export class ContractService {
       const response = await this.contract.functions.getCarContractWithId(contractId)
 
       return this.handleListContractResponse(response)
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
-  async pay() {
-    try {
-      const tx = await this.contract.functions.createContract(
-        4,
-        'acc3@gmail.com',
-        '0x2374d179C5f9fF0EAB3D4FAB8e9cF468a7b589fF',
-        'acc2@gmail.com',
-        '0xDaf584176486351708388B0aB2a67E2975b26989',
-        this._toWei(0.02),
-        this._toWei(0.01),
-        this._toWei(0.01),
-        this._toWei(0.01),
-        this._toWei(0.01),
-        3,
-        1711035479856,
-        1711035479856 + 86400000 * 3,
-        'Toyota',
-        '1234',
-        {
-          ...this.options,
-        },
-      )
-
-      return this._handleTransactionResponse(tx)
     } catch (e) {
       console.log(e)
     }

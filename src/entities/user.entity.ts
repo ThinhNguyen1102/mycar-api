@@ -1,8 +1,11 @@
-import {Column, Entity, OneToOne} from 'typeorm'
+import {Column, Entity, OneToMany, OneToOne} from 'typeorm'
 import {CommonEntity} from './common.entity'
 import {ApiResponseProperty} from '@nestjs/swagger'
 import {UserLoginInformation} from './user-login-informations.entity'
 import {UserRole, UserStatus} from 'src/common/enums/user.enum'
+import {CarRentalPost} from './car-rental-post.entity'
+import {CarContract} from './car-contract.entity'
+import {Notification} from './notification.entity'
 
 @Entity({name: 'users'})
 export class User extends CommonEntity {
@@ -33,4 +36,16 @@ export class User extends CommonEntity {
   // Define relations
   @OneToOne(() => UserLoginInformation, userInfo => userInfo.user)
   userLoginInfomation: UserLoginInformation
+
+  @OneToMany(() => CarRentalPost, carRentalPost => carRentalPost.owner)
+  carRentalPosts: CarRentalPost[]
+
+  @OneToMany(() => CarContract, ownedContract => ownedContract.owner)
+  ownedContracts: CarContract[]
+
+  @OneToMany(() => CarContract, rentedContract => rentedContract.renter)
+  rentedContracts: CarContract[]
+
+  @OneToMany(() => Notification, notification => notification.user)
+  notifications: Notification[]
 }

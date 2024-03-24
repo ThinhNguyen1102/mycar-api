@@ -20,22 +20,3 @@ export type CarContractSM = {
   status: CarContractStatus
   created_at: Date
 }
-
-// uint contract_id;
-// string owner_email;
-// address owner_address;
-// string renter_email;
-// address renter_address;
-// uint rental_price_per_day;
-// uint mortgage;
-// uint over_limit_fee;
-// uint over_time_fee;
-// uint cleaning_fee;
-// uint deodorization_fee;
-// uint num_of_days;
-// uint start_date;
-// uint end_date;
-// string car_model;
-// string car_plate;
-// CarContractStatus status;
-// uint created_at;

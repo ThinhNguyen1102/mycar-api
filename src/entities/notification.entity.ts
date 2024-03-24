@@ -1,6 +1,7 @@
-import {Column, Entity} from 'typeorm'
+import {Column, Entity, JoinColumn, ManyToOne} from 'typeorm'
 import {CommonEntity} from './common.entity'
 import {ApiResponseProperty} from '@nestjs/swagger'
+import {User} from './user.entity'
 
 @Entity({name: 'notifications'})
 export class Notification extends CommonEntity {
@@ -19,4 +20,11 @@ export class Notification extends CommonEntity {
   @ApiResponseProperty({type: String})
   @Column({type: String, nullable: false})
   title: string
+
+  // relation
+  @ManyToOne(() => User, user => user.notifications, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({name: 'user_id'})
+  user: User
 }
