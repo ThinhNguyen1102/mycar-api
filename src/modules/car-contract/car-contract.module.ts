@@ -20,5 +20,6 @@ import {CarContractRepository} from 'src/repositories/car-contract.repository'
     CarRentalPostRepository,
     CarContractRepository,
   ],
+  exports: [CarContractService],
 })
 export class CarContractModule {}

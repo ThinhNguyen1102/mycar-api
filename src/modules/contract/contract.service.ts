@@ -2,9 +2,11 @@ import {TransactionResponse} from '@ethersproject/abstract-provider'
 import {Inject, Injectable} from '@nestjs/common'
 import {BigNumber, ethers} from 'ethers'
 import {CarContractStatus} from 'src/common/enums/car-contract.enum'
+import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum'
 import {CONTRACT_CONFIG_TOKEN, ContractConfig} from 'src/common/types/contract'
 import {CarContractSM} from 'src/contract/types'
 import {CarContractRepository} from 'src/repositories/car-contract.repository'
+import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.repository'
 import {UserRepository} from 'src/repositories/user.repository'
 
 @Injectable()
@@ -17,7 +19,8 @@ export class ContractService {
   constructor(
     @Inject(CONTRACT_CONFIG_TOKEN) contractConfig: ContractConfig,
     private readonly carContractRepository: CarContractRepository,
-    private readonly userRepositoy: UserRepository,
+    private readonly userRepository: UserRepository,
+    private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
   ) {
     this.provider = new ethers.providers.JsonRpcProvider(contractConfig.rpc_provider_url)
     this.signer = new ethers.Wallet(contractConfig.signer_private_key, this.provider)
@@ -33,32 +36,42 @@ export class ContractService {
 
   async createCarContact(carContract: CarContractSM) {
     try {
-      try {
-        const tx = await this.contract.functions.createContract(
-          carContract.contract_id,
-          carContract.owner_email,
-          carContract.owner_address,
-          carContract.renter_email,
-          carContract.renter_address,
-          this._toWei(carContract.rental_price_per_day),
-          this._toWei(carContract.over_limit_fee),
-          this._toWei(carContract.over_time_fee),
-          this._toWei(carContract.cleaning_fee),
-          this._toWei(carContract.deodorization_fee),
-          carContract.num_of_days,
-          carContract.start_date.getTime(),
-          carContract.end_date.getTime(),
-          carContract.car_model,
-          carContract.car_plate,
-          {
-            ...this.options,
-          },
-        )
+      const tx = await this.contract.functions.createContract(
+        carContract.contract_id,
+        carContract.owner_email,
+        carContract.owner_address,
+        carContract.renter_email,
+        carContract.renter_address,
+        this._toWei(carContract.rental_price_per_day),
+        this._toWei(carContract.over_limit_fee),
+        this._toWei(carContract.over_time_fee),
+        this._toWei(carContract.cleaning_fee),
+        this._toWei(carContract.deodorization_fee),
+        carContract.num_of_days,
+        carContract.start_date.getTime(),
+        carContract.end_date.getTime(),
+        carContract.car_model,
+        carContract.car_plate,
+        {
+          ...this.options,
+        },
+      )
 
-        return this._handleTransactionResponse(tx)
-      } catch (e) {
-        console.log(e)
-      }
+      return this._handleTransactionResponse(tx)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async refundOwnerReject(contractId: number, renterAddress: string, amount: number) {
+    try {
+      const tx = await this.contract.functions.refundOwnerReject(
+        contractId,
+        renterAddress,
+        this._toWei(amount),
+      )
+
+      return this._handleTransactionResponse(tx)
     } catch (e) {
       console.log(e)
     }
@@ -84,7 +97,7 @@ export class ContractService {
     }
   }
 
-  listentCarContractEvent() {
+  private listentCarContractEvent() {
     this.contract.on(
       'PaymentReceived',
       async (contract_id, sender_email, amount, sender_address) => {
@@ -96,103 +109,27 @@ export class ContractService {
         console.log('amount:::', amount)
         console.log('sender_address:::', sender_address)
 
-        let invalidPayment = true
-        let isOwnerPayment = false
-
-        const user = await this.userRepositoy.findOne({where: {email: sender_email}})
-        if (!user) {
-          console.log("PaymentReceived::: user doesn't exist")
-          invalidPayment = false
-        }
-
-        const carContract = await this.carContractRepository.findOne({where: {id: contract_id}})
-        const {
-          contract_status,
-          renter_id,
-          owner_id,
-          renter_wallet_address,
-          owner_wallet_address,
-          mortgage,
-          price_per_day,
-          num_of_days,
-        } = carContract
-
-        if (!carContract) {
-          console.log("PaymentReceived::: Car contract doesn't exist")
-          invalidPayment = false
-        }
-
-        if (contract_status !== CarContractStatus.WAITING_APPROVAL) {
-          console.log('PaymentReceived::: invalid contract status')
-          invalidPayment = false
-        }
-
-        if (renter_id !== user.id && owner_id !== user.id) {
-          console.log('PaymentReceived::: invalid user')
-          invalidPayment = false
-        }
-
-        if (owner_id === user.id) {
-          isOwnerPayment = true
-        }
-
-        if (isOwnerPayment) {
-          const ownerAmount = price_per_day * num_of_days * 0.25
-          if (amount !== ownerAmount) {
-            console.log('PaymentReceived::: invalid amount')
-            invalidPayment = false
-          } else if (renter_wallet_address && renter_wallet_address === sender_address) {
-            console.log('PaymentReceived::: invalid renter address')
-            invalidPayment = false
-          } else {
-            carContract.owner_wallet_address = sender_address
-          }
-        } else {
-          const renterAmount = price_per_day * num_of_days + mortgage
-
-          if (amount !== renterAmount) {
-            console.log('PaymentReceived::: invalid amount')
-            invalidPayment = false
-          } else if (owner_wallet_address && owner_wallet_address === sender_address) {
-            console.log('PaymentReceived::: invalid renter address')
-            invalidPayment = false
-          }
-          {
-            carContract.renter_wallet_address = sender_address
-          }
-        }
-
-        if (invalidPayment) {
-          const isCompletedPayment =
-            carContract.owner_wallet_address && carContract.renter_wallet_address
-          if (isCompletedPayment) {
-            carContract.contract_status = CarContractStatus.APPROVED
-          }
-
-          await this.carContractRepository.save(carContract)
-          // send message to frontend
-        } else {
-          // send message to frontend
-        }
+        this.handlePaymentReceivedEvent(contract_id, sender_email, sender_address, amount)
       },
     )
 
     this.contract.on(
       'CarContractCreated',
-      (contract_id, owner_address, owner_email, renter_address, renter_email) => {
+      async (contract_id, owner_address, owner_email, renter_address, renter_email) => {
         console.log('ContractCreated')
         console.log('contract_id:::', contract_id)
         console.log('owner_address:::', owner_address)
         console.log('owner_email:::', owner_email)
         console.log('renter_address:::', renter_address)
         console.log('renter_email:::', renter_email)
+        await this.handleCarContractSMCreated(this._toNumber(contract_id))
       },
     )
 
     this.contract.on('CarContractRefundedOwnerRejected', (contract_id, renter_amount) => {
       console.log('CarContractRefundedOwnerRejected')
       console.log('contract_id:::', contract_id)
-      console.log('renter_amount:::', renter_amount)
+      console.log('renter_amount:::', this._toNumber(renter_amount))
     })
 
     this.contract.on('CarContractRefundedOwnerCanceled', (contract_id, renter_amount) => {
@@ -227,6 +164,143 @@ export class ContractService {
       console.log('CarContractEnded')
       console.log('contract_id:::', contract_id)
     })
+  }
+
+  private async handleCarContractSMCreated(contractId: number) {
+    const carContract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    carContract.contract_status = CarContractStatus.APPROVED
+
+    await this.carContractRepository.save(carContract)
+
+    // send message to frontend
+  }
+
+  private async handlePaymentReceivedEvent(
+    contractId: number,
+    senderEmail: string,
+    senderAddress: string,
+    amount: number,
+  ) {
+    let validPayment = true
+    let isOwnerPayment = false
+
+    const user = await this.userRepository.findOne({where: {email: senderEmail}})
+    if (!user) {
+      console.log("PaymentReceived::: user doesn't exist")
+      validPayment = false
+    }
+
+    const carContract = await this.carContractRepository.findOne({
+      where: {id: contractId},
+      relations: {
+        owner: true,
+        renter: true,
+        carRentalPost: true,
+      },
+    })
+
+    if (!carContract) {
+      console.log("PaymentReceived::: Car contract doesn't exist")
+      validPayment = false
+    }
+
+    const {
+      contract_status,
+      renter_id,
+      owner_id,
+      renter_wallet_address,
+      owner_wallet_address,
+      mortgage,
+      price_per_day,
+      num_of_days,
+    } = carContract
+    console.log('PaymentReceived::: contract_status:::', contract_status)
+
+    if (contract_status !== CarContractStatus.WAITING_APPROVAL) {
+      console.log('PaymentReceived::: invalid contract status')
+      validPayment = false
+    }
+
+    if (renter_id !== user.id && owner_id !== user.id) {
+      console.log('PaymentReceived::: invalid user')
+      validPayment = false
+    }
+
+    if (owner_id === user.id) {
+      isOwnerPayment = true
+    }
+
+    if (isOwnerPayment) {
+      const ownerAmount = price_per_day * num_of_days * 0.25
+      if (amount !== ownerAmount) {
+        console.log('PaymentReceived::: invalid amount')
+        validPayment = false
+      } else if (renter_wallet_address && renter_wallet_address === senderAddress) {
+        console.log('PaymentReceived::: invalid renter address')
+        validPayment = false
+      } else {
+        carContract.owner_wallet_address = senderAddress
+      }
+    } else {
+      const renterAmount = price_per_day * num_of_days + mortgage
+
+      if (amount !== renterAmount) {
+        console.log('PaymentReceived::: invalid amount')
+        validPayment = false
+      } else if (owner_wallet_address && owner_wallet_address === senderAddress) {
+        console.log('PaymentReceived::: invalid renter address')
+        validPayment = false
+      } else {
+        carContract.renter_wallet_address = senderAddress
+      }
+    }
+
+    if (validPayment) {
+      const isCompletedPayment =
+        carContract.owner_wallet_address && carContract.renter_wallet_address
+      if (isCompletedPayment) {
+        const carContractSm: CarContractSM = {
+          contract_id: carContract.id,
+          owner_address: carContract.owner_wallet_address,
+          owner_email: carContract.owner.email,
+          renter_address: carContract.renter_wallet_address,
+          renter_email: carContract.renter.email,
+          rental_price_per_day: carContract.price_per_day,
+          mortgage: carContract.mortgage,
+          over_limit_fee: carContract.over_limit_fee,
+          over_time_fee: carContract.over_time_fee,
+          cleaning_fee: carContract.cleaning_fee,
+          deodorization_fee: carContract.deodorization_fee,
+          num_of_days: carContract.num_of_days,
+          start_date: carContract.start_date,
+          end_date: carContract.end_date,
+          car_model: carContract.carRentalPost.model,
+          car_plate: carContract.carRentalPost.license_plate,
+          status: carContract.contract_status,
+          created_at: carContract.created_at,
+        }
+
+        const response = await this.createCarContact(carContractSm)
+
+        if (response) {
+          await this.contractTxHistoryRepository.save({
+            contract_id: carContract.id,
+            tx_hash: response.transactionHash,
+            tx_type: ContractTransactionType.CAR_CONTRACT_CREATE,
+          })
+        }
+      }
+
+      await this.carContractRepository.save(carContract)
+      // send message to frontend
+    } else {
+      // send message to frontend
+    }
   }
 
   private handleListContractResponse(response: any[]): CarContractSM[] {

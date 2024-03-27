@@ -7,11 +7,13 @@ import {CarContract} from 'src/entities/car-contract.entity'
 import {CarContractStatus} from 'src/common/enums/car-contract.enum'
 import {CarContractRepository} from 'src/repositories/car-contract.repository'
 import {ContractService} from '../contract/contract.service'
+import {UserRepository} from 'src/repositories/user.repository'
 
 @Injectable()
 export class CarContractService {
   constructor(
     private readonly contractService: ContractService,
+    private readonly userRepository: UserRepository,
     private readonly carRentalPostRepository: CarRentalPostRepository,
     private readonly carContractRepository: CarContractRepository,
   ) {}
@@ -56,5 +58,37 @@ export class CarContractService {
     const carContractResult = await this.carContractRepository.save(carContract)
 
     return carContractResult
+  }
+
+  async ownerRejectCarContract(contractId: number, owner: User) {
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (contract.owner_id !== owner.id) {
+      throw new BadRequestException('You are not the owner of this contract')
+    }
+
+    if (contract.contract_status !== CarContractStatus.WAITING_APPROVAL) {
+      throw new BadRequestException('Contract is not waiting for approval')
+    }
+
+    if (!contract.renter_wallet_address) {
+      throw new BadRequestException('Renter wallet address is not available')
+    }
+
+    contract.contract_status = CarContractStatus.REJECTED
+
+    await this.carContractRepository.save(contract)
+
+    this.contractService.refundOwnerReject(
+      contract.id,
+      contract.renter_wallet_address,
+      contract.num_of_days * contract.price_per_day + contract.mortgage,
+    )
+
+    return contract
   }
 }
