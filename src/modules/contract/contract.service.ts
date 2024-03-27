@@ -77,6 +77,26 @@ export class ContractService {
     }
   }
 
+  async refundOwnerCancel(contractId: number) {
+    try {
+      const tx = await this.contract.functions.refundOwnerCancel(contractId)
+
+      return this._handleTransactionResponse(tx)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async refundRenterCancel(contractId: number) {
+    try {
+      const tx = await this.contract.functions.refundRenterCancel(contractId)
+
+      return this._handleTransactionResponse(tx)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async getAllCarContract() {
     try {
       const response = await this.contract.functions.getCarContracts()

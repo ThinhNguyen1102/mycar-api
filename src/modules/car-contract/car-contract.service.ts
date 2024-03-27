@@ -7,13 +7,12 @@ import {CarContract} from 'src/entities/car-contract.entity'
 import {CarContractStatus} from 'src/common/enums/car-contract.enum'
 import {CarContractRepository} from 'src/repositories/car-contract.repository'
 import {ContractService} from '../contract/contract.service'
-import {UserRepository} from 'src/repositories/user.repository'
+import {SuccessRes} from 'src/common/types/response'
 
 @Injectable()
 export class CarContractService {
   constructor(
     private readonly contractService: ContractService,
-    private readonly userRepository: UserRepository,
     private readonly carRentalPostRepository: CarRentalPostRepository,
     private readonly carContractRepository: CarContractRepository,
   ) {}
@@ -89,6 +88,60 @@ export class CarContractService {
       contract.num_of_days * contract.price_per_day + contract.mortgage,
     )
 
-    return contract
+    return new SuccessRes(
+      'Owner reject contract successfully! Please check your wallet in a few minutes',
+    )
+  }
+
+  async cancelCarContractByOwner(contractId: number, owner: User) {
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (contract.owner_id !== owner.id) {
+      throw new BadRequestException('You are not the owner of this contract')
+    }
+
+    if (contract.contract_status !== CarContractStatus.APPROVED) {
+      throw new BadRequestException('Contract is not approved or started')
+    }
+
+    contract.contract_status = CarContractStatus.CANCELED
+
+    await this.carContractRepository.save(contract)
+
+    this.contractService.refundOwnerCancel(contract.id)
+
+    return new SuccessRes(
+      'Owner cancel contract successfully! Please check your wallet in a few minutes',
+    )
+  }
+
+  async cancelCarContractByRenter(contractId: number, renter: User) {
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (contract.renter_id !== renter.id) {
+      throw new BadRequestException('You are not the renter of this contract')
+    }
+
+    if (contract.contract_status !== CarContractStatus.APPROVED) {
+      throw new BadRequestException('Contract is not approved or started')
+    }
+
+    contract.contract_status = CarContractStatus.CANCELED
+
+    await this.carContractRepository.save(contract)
+
+    this.contractService.refundRenterCancel(contract.id)
+
+    return new SuccessRes(
+      'Renter cancel contract successfully! Please check your wallet in a few minutes',
+    )
   }
 }
