@@ -8,6 +8,7 @@ import {CarContractSM} from 'src/contract/types'
 import {CarContractRepository} from 'src/repositories/car-contract.repository'
 import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.repository'
 import {UserRepository} from 'src/repositories/user.repository'
+import {EndCarContractReq} from '../car-contract/dto/end-car-contract.req'
 
 @Injectable()
 export class ContractService {
@@ -90,6 +91,42 @@ export class ContractService {
   async refundRenterCancel(contractId: number) {
     try {
       const tx = await this.contract.functions.refundRenterCancel(contractId)
+
+      return this._handleTransactionResponse(tx)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async refund(contractId: number) {
+    try {
+      const tx = await this.contract.functions.refund(contractId)
+
+      return this._handleTransactionResponse(tx)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async startContract(contractId: number) {
+    try {
+      const tx = await this.contract.functions.startContract(contractId)
+
+      return this._handleTransactionResponse(tx)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async endContract(contractId: number, surcharge: EndCarContractReq) {
+    try {
+      const tx = await this.contract.functions.endContract(
+        contractId,
+        surcharge.is_over_limit,
+        surcharge.over_time,
+        surcharge.is_cleaning_fee,
+        surcharge.is_deodorization_fee,
+      )
 
       return this._handleTransactionResponse(tx)
     } catch (e) {

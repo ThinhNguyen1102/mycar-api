@@ -8,6 +8,8 @@ import {CarContractStatus} from 'src/common/enums/car-contract.enum'
 import {CarContractRepository} from 'src/repositories/car-contract.repository'
 import {ContractService} from '../contract/contract.service'
 import {SuccessRes} from 'src/common/types/response'
+import {EndCarContractReq} from './dto/end-car-contract.req'
+import {UserRole} from 'src/common/enums/user.enum'
 
 @Injectable()
 export class CarContractService {
@@ -142,6 +144,81 @@ export class CarContractService {
 
     return new SuccessRes(
       'Renter cancel contract successfully! Please check your wallet in a few minutes',
+    )
+  }
+
+  async startCarContractByRenter(contractId: number, renter: User) {
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (contract.renter_id !== renter.id) {
+      throw new BadRequestException('You are not the renter of this contract')
+    }
+
+    if (contract.contract_status !== CarContractStatus.APPROVED) {
+      throw new BadRequestException('Contract is not approved')
+    }
+
+    contract.contract_status = CarContractStatus.STARTED
+
+    await this.carContractRepository.save(contract)
+
+    this.contractService.startContract(contract.id)
+
+    return new SuccessRes('Contract started successfully!')
+  }
+
+  async endCarContractByOwner(contractId: number, owner: User, request: EndCarContractReq) {
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (contract.owner_id !== owner.id) {
+      throw new BadRequestException('You are not the owner of this contract')
+    }
+
+    if (contract.contract_status !== CarContractStatus.STARTED) {
+      throw new BadRequestException('Contract is not started')
+    }
+
+    contract.contract_status = CarContractStatus.ENDED
+
+    await this.carContractRepository.save(contract)
+
+    this.contractService.endContract(contract.id, request)
+
+    return new SuccessRes('Contract ended successfully! Please check your wallet in a few minutes')
+  }
+
+  async cancelCarContractByAdmin(contractId: number, user: User) {
+    user.role = UserRole.ADMIN
+    if (user.role !== UserRole.ADMIN) {
+      throw new BadRequestException('You are not an admin')
+    }
+
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (contract.contract_status !== CarContractStatus.APPROVED) {
+      throw new BadRequestException('Contract is not approved or started')
+    }
+
+    contract.contract_status = CarContractStatus.CANCELED
+
+    await this.carContractRepository.save(contract)
+
+    this.contractService.refund(contract.id)
+
+    return new SuccessRes(
+      'Admin cancel contract successfully! Please check your wallet in a few minutes',
     )
   }
 }

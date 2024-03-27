@@ -7,6 +7,7 @@ import {CurrentUser} from 'src/common/decorators/current-user.decorator'
 import {User} from 'src/entities/user.entity'
 import {CarContractIdParam} from './dto/car-contract.param'
 import {SuccessRes} from 'src/common/types/response'
+import {EndCarContractReq} from './dto/end-car-contract.req'
 
 @ApiTags('Contract')
 @Controller('car-contracts')
@@ -95,5 +96,57 @@ export class CarContractController {
     @Param() {contractId}: CarContractIdParam,
   ) {
     return await this.carContractService.cancelCarContractByRenter(contractId, user)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SuccessRes,
+  })
+  @ApiOperation({
+    operationId: 'start-car-contract',
+    summary: 'Start car contract',
+    description: 'Start car contract',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':contractId/start')
+  async startCarContract(@CurrentUser() user: User, @Param() {contractId}: CarContractIdParam) {
+    return await this.carContractService.startCarContractByRenter(contractId, user)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SuccessRes,
+  })
+  @ApiOperation({
+    operationId: 'end-car-contract',
+    summary: 'End car contract',
+    description: 'End car contract',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':contractId/end')
+  async endCarContract(
+    @CurrentUser() user: User,
+    @Param() {contractId}: CarContractIdParam,
+    @Body() request: EndCarContractReq,
+  ) {
+    return await this.carContractService.endCarContractByOwner(contractId, user, request)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SuccessRes,
+  })
+  @ApiOperation({
+    operationId: 'admin-cancel-contract',
+    summary: 'Admin cancel contract',
+    description: 'Admin cancel contract',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':contractId/admin/cancel')
+  async adminCancelContract(@CurrentUser() user: User, @Param() {contractId}: CarContractIdParam) {
+    return await this.carContractService.cancelCarContractByAdmin(contractId, user)
   }
 }
