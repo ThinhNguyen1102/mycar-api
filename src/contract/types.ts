@@ -1,4 +1,5 @@
 import {CarContractStatus} from 'src/common/enums/car-contract.enum'
+import {EndCarContractReq} from 'src/modules/car-contract/dto/end-car-contract.req'
 import {Numbers} from 'web3'
 
 export type CarContractSM = {
@@ -81,4 +82,24 @@ export class CarContractStartedEvent {
 
 export class CarContractEndedEvent {
   contract_id: Numbers
+}
+
+export type RefundOwnerRejectParam = {
+  contract_id: number
+  renter_address: string
+  amount: number
+}
+
+export type CarContractParam = {
+  contract_id: number
+}
+
+export type RefundOwnerCancelParam = CarContractParam
+export type RefundRenterCancelParam = CarContractParam
+export type RefundAdminCancelParam = CarContractParam
+export type StartCarContractParam = CarContractParam
+
+export type EndCarContractParam = {
+  contract_id: number
+  surcharge: EndCarContractReq
 }

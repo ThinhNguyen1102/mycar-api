@@ -15,6 +15,7 @@ import {CarContractSM, PaymentTxInfomation} from 'src/contract/types'
 import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.repository'
 import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum'
 import {EventEmitter2} from '@nestjs/event-emitter'
+import {CALL_EVENTS} from 'src/common/constants/event.const'
 
 @Injectable()
 export class CarContractService {
@@ -319,7 +320,7 @@ export class CarContractService {
         created_at: carContract.created_at,
       }
 
-      this.eventEmitter.emit('call::create_contract', carContractSm)
+      this.eventEmitter.emit(CALL_EVENTS.CREATE_CAR_CONTRACT, carContractSm)
     }
 
     await this.carContractRepository.save(carContract)

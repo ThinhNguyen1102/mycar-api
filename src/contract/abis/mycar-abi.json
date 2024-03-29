@@ -149,7 +149,13 @@
       {"internalType": "string", "name": "car_plate", "type": "string"}
     ],
     "name": "createContract",
-    "outputs": [],
+    "outputs": [
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "string", "name": "", "type": "string"},
+      {"internalType": "address", "name": "", "type": "address"},
+      {"internalType": "string", "name": "", "type": "string"}
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -162,7 +168,7 @@
       {"internalType": "bool", "name": "is_deodorization_fee", "type": "bool"}
     ],
     "name": "endContract",
-    "outputs": [],
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -285,14 +291,21 @@
   {
     "inputs": [{"internalType": "uint256", "name": "contract_id", "type": "uint256"}],
     "name": "refund",
-    "outputs": [],
+    "outputs": [
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "uint256", "name": "", "type": "uint256"}
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [{"internalType": "uint256", "name": "contract_id", "type": "uint256"}],
     "name": "refundOwnerCancel",
-    "outputs": [],
+    "outputs": [
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "uint256", "name": "", "type": "uint256"}
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -303,14 +316,21 @@
       {"internalType": "uint256", "name": "amount", "type": "uint256"}
     ],
     "name": "refundOwnerReject",
-    "outputs": [],
+    "outputs": [
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "uint256", "name": "", "type": "uint256"}
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [{"internalType": "uint256", "name": "contract_id", "type": "uint256"}],
     "name": "refundRenterCancel",
-    "outputs": [],
+    "outputs": [
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "uint256", "name": "", "type": "uint256"},
+      {"internalType": "uint256", "name": "", "type": "uint256"}
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -358,7 +378,7 @@
   {
     "inputs": [{"internalType": "uint256", "name": "contract_id", "type": "uint256"}],
     "name": "startContract",
-    "outputs": [],
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "nonpayable",
     "type": "function"
   },

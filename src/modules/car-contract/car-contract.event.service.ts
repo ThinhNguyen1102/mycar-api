@@ -7,16 +7,22 @@ import {
   CarContractRefundedEvent,
   CarContractSM,
   CarContractStartedEvent,
+  EndCarContractParam,
   PaymentReceivedEvent,
+  RefundAdminCancelParam,
   RefundedOwnerCanceledEvent,
   RefundedOwnerRejectedEvent,
   RefundedRenterCanceledEvent,
+  RefundOwnerCancelParam,
+  RefundOwnerRejectParam,
+  RefundRenterCancelParam,
+  StartCarContractParam,
 } from 'src/contract/types'
 import {CarContractRepository} from 'src/repositories/car-contract.repository'
 import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.repository'
 import {ContractService} from '../contract/contract.service'
 import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum'
-import {LISTEN_EVENTS} from 'src/common/constants/event.const'
+import {CALL_EVENTS, LISTEN_EVENTS} from 'src/common/constants/event.const'
 
 @Injectable()
 export class CarContractEventService {
@@ -26,8 +32,78 @@ export class CarContractEventService {
     private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
   ) {}
 
-  @OnEvent('call::create_contract')
-  async handleSaveTxEvent(contract: CarContractSM) {
+  @OnEvent(CALL_EVENTS.REFUND_OWNER_REJECTED)
+  async handleCallRefundOwnerReject({contract_id, renter_address, amount}: RefundOwnerRejectParam) {
+    const txResponse = await this.contractService.refundOwnerReject(
+      contract_id,
+      renter_address,
+      amount,
+    )
+
+    await this.contractTxHistoryRepository.save({
+      contract_id: contract_id,
+      tx_hash: txResponse.transactionHash,
+      tx_type: ContractTransactionType.REFUND_OWNER_REJECT,
+    })
+  }
+
+  @OnEvent(CALL_EVENTS.REFUND_OWNER_CANCELED)
+  async handleCallRefundOwnerCanceled({contract_id}: RefundOwnerCancelParam) {
+    const txResponse = await this.contractService.refundOwnerCancel(contract_id)
+
+    await this.contractTxHistoryRepository.save({
+      contract_id: contract_id,
+      tx_hash: txResponse.transactionHash,
+      tx_type: ContractTransactionType.REFUND_OWNER_CANCEL,
+    })
+  }
+
+  @OnEvent(CALL_EVENTS.REFUND_RENTER_CANCELED)
+  async handleCallRefundRenterCanceled({contract_id}: RefundRenterCancelParam) {
+    const txResponse = await this.contractService.refundRenterCancel(contract_id)
+
+    await this.contractTxHistoryRepository.save({
+      contract_id: contract_id,
+      tx_hash: txResponse.transactionHash,
+      tx_type: ContractTransactionType.REFUND_RENTAL_CANCEL,
+    })
+  }
+
+  @OnEvent(CALL_EVENTS.REFUND_ADMIN_CANCEL)
+  async handleCallRefundAdminCancel({contract_id}: RefundAdminCancelParam) {
+    const txResponse = await this.contractService.refund(contract_id)
+
+    await this.contractTxHistoryRepository.save({
+      contract_id: contract_id,
+      tx_hash: txResponse.transactionHash,
+      tx_type: ContractTransactionType.REFUND_ADMIN_CANCEL,
+    })
+  }
+
+  @OnEvent(CALL_EVENTS.START_CAR_CONTRACT)
+  async handleCallStartContract({contract_id}: StartCarContractParam) {
+    const txResponse = await this.contractService.startContract(contract_id)
+
+    await this.contractTxHistoryRepository.save({
+      contract_id: contract_id,
+      tx_hash: txResponse.transactionHash,
+      tx_type: ContractTransactionType.CAR_CONTRACT_STARTED,
+    })
+  }
+
+  @OnEvent(CALL_EVENTS.END_CAR_CONTRACT)
+  async handleCallEndContract({contract_id, surcharge}: EndCarContractParam) {
+    const txResponse = await this.contractService.endContract(contract_id, surcharge)
+
+    await this.contractTxHistoryRepository.save({
+      contract_id: contract_id,
+      tx_hash: txResponse.transactionHash,
+      tx_type: ContractTransactionType.CAR_CONTRACT_ENDED,
+    })
+  }
+
+  @OnEvent(CALL_EVENTS.CREATE_CAR_CONTRACT)
+  async handleCallCreateContract(contract: CarContractSM) {
     const txResponse = await this.contractService.createCarContact(contract)
 
     await this.contractTxHistoryRepository.save({
