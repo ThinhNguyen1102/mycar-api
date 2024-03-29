@@ -11,6 +11,7 @@ import {ContractModule} from './modules/contract/contract.module'
 import {readJSONFile} from './utils/read-json-file'
 import {CarContractModule} from './modules/car-contract/car-contract.module'
 import {CarRentaPostModule} from './modules/car-rental-post/car-rental-post.module'
+import {EventEmitterModule} from '@nestjs/event-emitter'
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import {CarRentaPostModule} from './modules/car-rental-post/car-rental-post.modu
       },
       inject: [ConfigService],
     }),
+    EventEmitterModule.forRoot(),
     AuthModule,
     CarContractModule,
     CarRentaPostModule,

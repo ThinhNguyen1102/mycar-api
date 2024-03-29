@@ -1,9 +1,10 @@
 export enum ContractTransactionType {
-  PAYMENT = 'payment',
-  CAR_CONTRACT_CREATE = 'car_contract_create',
-  REFUND_OWNER_REJECT = 'refund_owner_reject',
-  REFUND_OWNER_CANCEL = 'refund_owner_cancel',
-  REFUND_RENTAL_CANCEL = 'CANCEL',
-  CAR_CONTRACT_STARTED = 'REFUND',
-  CAR_CONTRACT_ENDED = 'OVERDUE',
+  PAYMENT = 'pay',
+  CAR_CONTRACT_CREATE = 'createContract',
+  REFUND_ADMIN_CANCEL = 'refund',
+  REFUND_OWNER_REJECT = 'refundOwnerReject',
+  REFUND_OWNER_CANCEL = 'refundOwnerCancel',
+  REFUND_RENTAL_CANCEL = 'refundRentalCancel',
+  CAR_CONTRACT_STARTED = 'startContract',
+  CAR_CONTRACT_ENDED = 'endContract',
 }

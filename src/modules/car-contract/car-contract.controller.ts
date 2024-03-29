@@ -8,6 +8,7 @@ import {User} from 'src/entities/user.entity'
 import {CarContractIdParam} from './dto/car-contract.param'
 import {SuccessRes} from 'src/common/types/response'
 import {EndCarContractReq} from './dto/end-car-contract.req'
+import {PaymentConfirmReq} from './dto/payment-confirm.req'
 
 @ApiTags('Contract')
 @Controller('car-contracts')
@@ -148,5 +149,25 @@ export class CarContractController {
   @Post(':contractId/admin/cancel')
   async adminCancelContract(@CurrentUser() user: User, @Param() {contractId}: CarContractIdParam) {
     return await this.carContractService.cancelCarContractByAdmin(contractId, user)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SuccessRes,
+  })
+  @ApiOperation({
+    operationId: 'payment',
+    summary: 'Payment',
+    description: 'Payment',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':contractId/payment/confirm')
+  async confirmPayment(
+    @CurrentUser() user: User,
+    @Param() {contractId}: CarContractIdParam,
+    @Body() {tx_hash}: PaymentConfirmReq,
+  ) {
+    return await this.carContractService.confirmPayment(contractId, user, tx_hash)
   }
 }

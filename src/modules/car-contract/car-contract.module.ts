@@ -9,16 +9,21 @@ import {UserRepository} from 'src/repositories/user.repository'
 import {CarRentalPostRepository} from 'src/repositories/car-rental-post.repository'
 import {CarContract} from 'src/entities/car-contract.entity'
 import {CarContractRepository} from 'src/repositories/car-contract.repository'
+import {CarContractEventService} from './car-contract.event.service'
+import {ContractTxHistory} from 'src/entities/contract-tx-history.entity'
+import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.repository'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, CarRentalPost, CarContract])],
+  imports: [TypeOrmModule.forFeature([User, CarRentalPost, CarContract, ContractTxHistory])],
   controllers: [CarContractController],
   providers: [
     CarContractService,
+    CarContractEventService,
     IsExistedRule,
     UserRepository,
     CarRentalPostRepository,
     CarContractRepository,
+    ContractTxHistoryRepository,
   ],
   exports: [CarContractService],
 })
