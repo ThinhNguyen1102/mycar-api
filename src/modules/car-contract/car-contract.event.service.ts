@@ -23,6 +23,7 @@ import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.
 import {ContractService} from '../contract/contract.service'
 import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum'
 import {CALL_EVENTS, LISTEN_EVENTS} from 'src/common/constants/event.const'
+import {ContractFulfillmentRepository} from 'src/repositories/contract-fulfillment.repository'
 
 @Injectable()
 export class CarContractEventService {
@@ -30,6 +31,7 @@ export class CarContractEventService {
     private readonly carContractRepository: CarContractRepository,
     private readonly contractService: ContractService,
     private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
+    private readonly contractFulfillmentRepository: ContractFulfillmentRepository,
   ) {}
 
   @OnEvent(CALL_EVENTS.REFUND_OWNER_REJECTED)
@@ -38,6 +40,13 @@ export class CarContractEventService {
       contract_id,
       renter_address,
       amount,
+    )
+
+    await this.carContractRepository.update(
+      {
+        id: contract_id,
+      },
+      {contract_status: CarContractStatus.REJECTED},
     )
 
     await this.contractTxHistoryRepository.save({
@@ -51,6 +60,13 @@ export class CarContractEventService {
   async handleCallRefundOwnerCanceled({contract_id}: RefundOwnerCancelParam) {
     const txResponse = await this.contractService.refundOwnerCancel(contract_id)
 
+    await this.carContractRepository.update(
+      {
+        id: contract_id,
+      },
+      {contract_status: CarContractStatus.CANCELED},
+    )
+
     await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
@@ -61,6 +77,13 @@ export class CarContractEventService {
   @OnEvent(CALL_EVENTS.REFUND_RENTER_CANCELED)
   async handleCallRefundRenterCanceled({contract_id}: RefundRenterCancelParam) {
     const txResponse = await this.contractService.refundRenterCancel(contract_id)
+
+    await this.carContractRepository.update(
+      {
+        id: contract_id,
+      },
+      {contract_status: CarContractStatus.CANCELED},
+    )
 
     await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
@@ -73,6 +96,13 @@ export class CarContractEventService {
   async handleCallRefundAdminCancel({contract_id}: RefundAdminCancelParam) {
     const txResponse = await this.contractService.refund(contract_id)
 
+    await this.carContractRepository.update(
+      {
+        id: contract_id,
+      },
+      {contract_status: CarContractStatus.CANCELED},
+    )
+
     await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
@@ -84,6 +114,13 @@ export class CarContractEventService {
   async handleCallStartContract({contract_id}: StartCarContractParam) {
     const txResponse = await this.contractService.startContract(contract_id)
 
+    await this.carContractRepository.update(
+      {
+        id: contract_id,
+      },
+      {contract_status: CarContractStatus.STARTED},
+    )
+
     await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
@@ -94,6 +131,22 @@ export class CarContractEventService {
   @OnEvent(CALL_EVENTS.END_CAR_CONTRACT)
   async handleCallEndContract({contract_id, surcharge}: EndCarContractParam) {
     const txResponse = await this.contractService.endContract(contract_id, surcharge)
+
+    await this.carContractRepository.update(
+      {
+        id: contract_id,
+      },
+      {contract_status: CarContractStatus.ENDED},
+    )
+
+    await this.contractFulfillmentRepository.save({
+      contract_id: contract_id,
+      has_cleaning_fee: surcharge.is_cleaning_fee,
+      has_deodorization_fee: surcharge.is_deodorization_fee,
+      has_over_limit_fee: surcharge.is_over_limit_fee,
+      has_over_time_fee: surcharge.over_time > 0,
+      over_time_hours: surcharge.over_time,
+    })
 
     await this.contractTxHistoryRepository.save({
       contract_id: contract_id,

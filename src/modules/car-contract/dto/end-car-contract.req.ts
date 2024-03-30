@@ -5,7 +5,7 @@ export class EndCarContractReq {
   @ApiProperty({type: Boolean, required: true})
   @IsNotEmpty()
   @IsBoolean()
-  is_over_limit: boolean
+  is_over_limit_fee: boolean
 
   @ApiProperty({type: Number, required: true})
   @IsNotEmpty()

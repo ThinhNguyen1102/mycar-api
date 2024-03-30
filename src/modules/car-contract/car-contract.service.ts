@@ -88,15 +88,11 @@ export class CarContractService {
       throw new BadRequestException('Renter wallet address is not available')
     }
 
-    contract.contract_status = CarContractStatus.REJECTED
-
-    await this.carContractRepository.save(contract)
-
-    this.contractService.refundOwnerReject(
-      contract.id,
-      contract.renter_wallet_address,
-      contract.num_of_days * contract.price_per_day + contract.mortgage,
-    )
+    this.eventEmitter.emit(CALL_EVENTS.REFUND_OWNER_REJECTED, {
+      contract_id: contract.id,
+      renter_wallet_address: contract.renter_wallet_address,
+      amount: contract.num_of_days * contract.price_per_day + contract.mortgage,
+    })
 
     return new SuccessRes(
       'Owner reject contract successfully! Please check your wallet in a few minutes',
@@ -118,11 +114,9 @@ export class CarContractService {
       throw new BadRequestException('Contract is not approved or started')
     }
 
-    contract.contract_status = CarContractStatus.CANCELED
-
-    await this.carContractRepository.save(contract)
-
-    this.contractService.refundOwnerCancel(contract.id)
+    this.eventEmitter.emit(CALL_EVENTS.REFUND_OWNER_CANCELED, {
+      contract_id: contract.id,
+    })
 
     return new SuccessRes(
       'Owner cancel contract successfully! Please check your wallet in a few minutes',
@@ -144,11 +138,9 @@ export class CarContractService {
       throw new BadRequestException('Contract is not approved or started')
     }
 
-    contract.contract_status = CarContractStatus.CANCELED
-
-    await this.carContractRepository.save(contract)
-
-    this.contractService.refundRenterCancel(contract.id)
+    this.eventEmitter.emit(CALL_EVENTS.REFUND_RENTER_CANCELED, {
+      contract_id: contract.id,
+    })
 
     return new SuccessRes(
       'Renter cancel contract successfully! Please check your wallet in a few minutes',
@@ -170,11 +162,9 @@ export class CarContractService {
       throw new BadRequestException('Contract is not approved')
     }
 
-    contract.contract_status = CarContractStatus.STARTED
-
-    await this.carContractRepository.save(contract)
-
-    this.contractService.startContract(contract.id)
+    this.eventEmitter.emit(CALL_EVENTS.START_CAR_CONTRACT, {
+      contract_id: contract.id,
+    })
 
     return new SuccessRes('Contract started successfully!')
   }
@@ -194,11 +184,10 @@ export class CarContractService {
       throw new BadRequestException('Contract is not started')
     }
 
-    contract.contract_status = CarContractStatus.ENDED
-
-    await this.carContractRepository.save(contract)
-
-    this.contractService.endContract(contract.id, request)
+    this.eventEmitter.emit(CALL_EVENTS.END_CAR_CONTRACT, {
+      contract_id: contract.id,
+      surcharge: request,
+    })
 
     return new SuccessRes('Contract ended successfully! Please check your wallet in a few minutes')
   }
@@ -219,11 +208,7 @@ export class CarContractService {
       throw new BadRequestException('Contract is not approved or started')
     }
 
-    contract.contract_status = CarContractStatus.CANCELED
-
-    await this.carContractRepository.save(contract)
-
-    this.contractService.refund(contract.id)
+    this.eventEmitter.emit(CALL_EVENTS.REFUND_ADMIN_CANCEL, contract.id)
 
     return new SuccessRes(
       'Admin cancel contract successfully! Please check your wallet in a few minutes',

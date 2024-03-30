@@ -130,7 +130,7 @@ export class ContractService {
     try {
       const tx = await this.contract.functions.endContract(
         contractId,
-        surcharge.is_over_limit,
+        surcharge.is_over_limit_fee,
         surcharge.over_time,
         surcharge.is_cleaning_fee,
         surcharge.is_deodorization_fee,

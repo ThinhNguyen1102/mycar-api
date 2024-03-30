@@ -6,7 +6,7 @@ export const LISTEN_EVENTS = {
   REFUNDED_RENTER_CANCELED: 'event::CarContractRefundedRenterCanceled',
   REFUNDED_ADMIN_CANCEL: 'event::CarContractRefunded',
   CAR_CONTRACT_STARTED: 'event::CarContractStarted',
-  CAR_CONTRACT_ENDED: 'event::CarContractStarted',
+  CAR_CONTRACT_ENDED: 'event::CarContractEnded',
 }
 
 export const CALL_EVENTS = {
