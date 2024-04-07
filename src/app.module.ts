@@ -12,6 +12,7 @@ import {readJSONFile} from './utils/read-json-file'
 import {CarContractModule} from './modules/car-contract/car-contract.module'
 import {CarRentaPostModule} from './modules/car-rental-post/car-rental-post.module'
 import {EventEmitterModule} from '@nestjs/event-emitter'
+import {UserModule} from './modules/user/user.module'
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import {EventEmitterModule} from '@nestjs/event-emitter'
     AuthModule,
     CarContractModule,
     CarRentaPostModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

@@ -19,6 +19,83 @@ export class CarRentalPostService {
     private readonly carImageRepository: CarImageRepository,
   ) {}
 
+  async updateCarRentalPost(post_id: number, request: CreateCarRentalPostReq, owner: User) {
+    const existedFeatures = await this.carFeatureRepository.find({
+      where: {
+        id: In(request.car_feature_ids),
+      },
+    })
+
+    const carRentalPost = await this.carRentalPostRepository.findOne({
+      where: {
+        id: post_id,
+      },
+    })
+
+    if (!carRentalPost) {
+      throw new BadRequestException('Car rental post not found')
+    }
+
+    if (carRentalPost.owner_id !== owner.id) {
+      throw new BadRequestException('You are not the owner of this post')
+    }
+
+    const updateData = {...request}
+    delete updateData.car_feature_ids
+    delete updateData.car_image_urls
+    delete updateData.district_name
+    delete updateData.prefecture_name
+
+    console.log(updateData)
+
+    const carRentalPostSaved = await this.carRentalPostRepository.update(
+      {
+        id: post_id,
+      },
+      {
+        ...updateData,
+      },
+    )
+
+    await this.carRentalPostAddressRepository.delete({
+      post_id: post_id,
+    })
+
+    await this.carRentalPostAddressRepository.insert({
+      post_id: post_id,
+      district_name: request.district_name,
+      prefecture_name: request.prefecture_name,
+    })
+
+    await this.carImageRepository.delete({
+      post_id: post_id,
+    })
+
+    await this.carImageRepository.insert(
+      request.car_image_urls.map(url => ({
+        post_id: post_id,
+        image_url: url,
+      })),
+    )
+
+    await this.carRentalPostFeatureRepository.delete({
+      post_id: post_id,
+    })
+
+    await this.carRentalPostFeatureRepository
+      .createQueryBuilder()
+      .insert()
+      .values(
+        existedFeatures.map(feature => ({
+          post_id: post_id,
+          car_feature_id: feature.id,
+        })),
+      )
+      .execute()
+
+    return carRentalPostSaved
+  }
+
   async createCarRentalPost(request: CreateCarRentalPostReq, owner: User) {
     const existedFeatures = await this.carFeatureRepository.find({
       where: {
@@ -83,6 +160,12 @@ export class CarRentalPostService {
 
     return {
       ...carRentalPost,
+      owner: {
+        id: carRentalPost.owner.id,
+        email: carRentalPost.owner.email,
+        username: carRentalPost.owner.username,
+        phone_number: carRentalPost.owner.phone_number,
+      },
       carRentalPostFeatures: carRentalPost.carRentalPostFeatures.map(
         feature => feature.carFeature.detail,
       ),
@@ -92,5 +175,34 @@ export class CarRentalPostService {
         prefecture_name: carRentalPost.carRentalPostAddress.prefecture_name,
       },
     }
+  }
+
+  async getCarRentalPosts() {
+    const carRentalPosts = await this.carRentalPostRepository
+      .createQueryBuilder('crp')
+      .leftJoinAndSelect('crp.owner', 'owner')
+      .leftJoinAndSelect('crp.carImages', 'carImages')
+      .leftJoinAndSelect('crp.carRentalPostAddress', 'carRentalPostAddress')
+      .leftJoinAndSelect('crp.carRentalPostFeatures', 'carRentalPostFeatures')
+      .leftJoinAndSelect('carRentalPostFeatures.carFeature', 'carFeature')
+      .getMany()
+
+    return carRentalPosts.map(carRentalPost => ({
+      ...carRentalPost,
+      owner: {
+        id: carRentalPost.owner.id,
+        email: carRentalPost.owner.email,
+        username: carRentalPost.owner.username,
+        phone_number: carRentalPost.owner.phone_number,
+      },
+      carRentalPostFeatures: carRentalPost.carRentalPostFeatures.map(
+        feature => feature.carFeature.detail,
+      ),
+      carImages: carRentalPost.carImages.map(image => image.image_url),
+      carRentalPostAddress: {
+        district_name: carRentalPost.carRentalPostAddress.district_name,
+        prefecture_name: carRentalPost.carRentalPostAddress.prefecture_name,
+      },
+    }))
   }
 }

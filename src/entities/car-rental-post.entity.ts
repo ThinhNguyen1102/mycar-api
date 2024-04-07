@@ -31,6 +31,14 @@ export class CarRentalPost extends CommonEntity {
   @Column({type: 'enum', enum: Fuel, nullable: false})
   fuel: Fuel
 
+  @ApiResponseProperty({type: Number})
+  @Column({type: Number, nullable: false})
+  consumption: number
+
+  @ApiResponseProperty({type: Number})
+  @Column({type: Number, nullable: false})
+  year: number
+
   @ApiResponseProperty({type: String})
   @Column({type: 'text', nullable: false})
   description: string

@@ -1,4 +1,4 @@
-import {Body, Controller, Get, HttpStatus, Param, Post, UseGuards} from '@nestjs/common'
+import {Body, Controller, Get, HttpStatus, Param, Post, Put, UseGuards} from '@nestjs/common'
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger'
 import {CarRentalPostService} from './car-rental-post.service'
 import {JwtAuthGuard} from 'src/common/guards/jwt-auth.guard'
@@ -31,6 +31,26 @@ export class CarRentalPostController {
 
   @ApiResponse({
     status: HttpStatus.OK,
+    type: CarRentalPost,
+  })
+  @ApiOperation({
+    operationId: 'update-car-rental-post',
+    summary: 'Update car rental post',
+    description: 'Update car rental post',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Put(':post_id')
+  async updateCarRentalPost(
+    @Param() {post_id}: CarRentalPostParam,
+    @Body() request: CreateCarRentalPostReq,
+    @CurrentUser() user: User,
+  ) {
+    return this.carRentalPostService.updateCarRentalPost(post_id, request, user)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
   })
   @ApiOperation({
     operationId: 'get-car-rental-post-detail',
@@ -42,5 +62,20 @@ export class CarRentalPostController {
   @Get(':post_id')
   async getCarRentalPostDetail(@Param() {post_id}: CarRentalPostParam) {
     return this.carRentalPostService.getCarRentalPostDetail(post_id)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'get-car-rental-posts',
+    summary: 'Get car rental posts',
+    description: 'Get car rental posts',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('')
+  async getCarRentalPosts() {
+    return this.carRentalPostService.getCarRentalPosts()
   }
 }
