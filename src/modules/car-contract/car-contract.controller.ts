@@ -26,8 +26,8 @@ export class CarContractController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('')
-  async getAllCarContract() {
-    return await this.carContractService.getAllCarContract()
+  async getAllCarContract(@CurrentUser() user: User) {
+    return await this.carContractService.getAllCarContract(user)
   }
 
   @ApiResponse({

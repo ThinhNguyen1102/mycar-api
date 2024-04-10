@@ -18,6 +18,10 @@ export class ContractTxHistory extends CommonEntity {
   @Column({type: 'enum', enum: ContractTransactionType, nullable: false})
   tx_type: ContractTransactionType
 
+  @ApiResponseProperty({type: Number})
+  @Column({type: Number, nullable: true})
+  tx_value: number
+
   // relation
   @ManyToOne(() => CarContract, carContract => carContract.contractTxHistories, {
     onDelete: 'CASCADE',

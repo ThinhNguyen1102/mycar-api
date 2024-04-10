@@ -27,8 +27,71 @@ export class CarContractService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async getAllCarContract() {
-    return this.contractService.getAllCarContract()
+  async getAllCarContract(user: User) {
+    const carContracts = await this.carContractRepository
+      .createQueryBuilder('cc')
+      .where('cc.renter_id = :id OR cc.owner_id = :id', {id: user.id})
+      .leftJoinAndSelect('cc.owner', 'owner')
+      .leftJoinAndSelect('cc.renter', 'renter')
+      .leftJoinAndSelect('cc.contractFulfillment', 'contractFulfillment')
+      .leftJoinAndSelect('cc.reviews', 'reviews')
+      .leftJoinAndSelect('cc.contractTxHistories', 'contractTxHistories')
+      .getMany()
+
+    return carContracts.map(contract => {
+      return {
+        id: contract.id,
+        post_id: contract.post_id,
+        owner: {
+          id: contract.owner.id,
+          email: contract.owner.email,
+          full_name: contract.owner.username,
+          phone_number: contract.owner.phone_number,
+        },
+        renter: {
+          id: contract.renter.id,
+          email: contract.renter.email,
+          full_name: contract.renter.username,
+          phone_number: contract.renter.phone_number,
+        },
+        contractFulfillment: contract.contractFulfillment
+          ? {
+              id: contract.contractFulfillment.id,
+              has_cleaning_fee: contract.contractFulfillment.has_cleaning_fee,
+              has_deodorization_fee: contract.contractFulfillment.has_deodorization_fee,
+              has_over_limit_fee: contract.contractFulfillment.has_over_limit_fee,
+              has_over_time_fee: contract.contractFulfillment.has_over_time_fee,
+              over_time_hours: contract.contractFulfillment.over_time_hours,
+              other_fee: contract.contractFulfillment.other_fee,
+              other_fee_detail: contract.contractFulfillment.other_fee_detail,
+            }
+          : null,
+        contractTxHistories: contract.contractTxHistories.map(tx => {
+          return {
+            id: tx.id,
+            tx_hash: tx.tx_hash,
+            tx_type: tx.tx_type,
+            created_at: tx.created_at,
+          }
+        }),
+        contract_status: contract.contract_status,
+        start_date: contract.start_date,
+        end_date: contract.end_date,
+        renter_wallet_address: contract.renter_wallet_address,
+        owner_wallet_address: contract.owner_wallet_address,
+        car_info_snapshot: contract.car_info_snapshot,
+        price_per_day: contract.price_per_day,
+        mortgage: contract.mortgage,
+        over_limit_fee: contract.over_limit_fee,
+        over_time_fee: contract.over_time_fee,
+        cleaning_fee: contract.cleaning_fee,
+        deodorization_fee: contract.deodorization_fee,
+        num_of_days: contract.num_of_days,
+        created_at: contract.created_at,
+        updated_at: contract.updated_at,
+        reviews: contract.reviews,
+      }
+    })
   }
 
   async createCarContract(request: CreateCarContractReq, renter: User) {
@@ -36,6 +99,7 @@ export class CarContractService {
       where: {
         id: request.post_id,
       },
+      relations: ['owner'],
     })
 
     if (post.post_status !== CarRentalPostStatus.PUBLISHED) {
@@ -46,27 +110,65 @@ export class CarContractService {
       throw new BadRequestException('You can not rent your own car')
     }
 
-    const carContract = new CarContract()
-    carContract.renter_id = request.renter_id
-    carContract.owner_id = request.owner_id
-    carContract.post_id = request.post_id
-    carContract.start_date = new Date(request.start_date_ts)
-    carContract.end_date = new Date(request.end_date_ts)
-    carContract.contract_status = CarContractStatus.WAITING_APPROVAL
-    carContract.car_info_snapshot = 'car_info_summary'
-    carContract.price_per_day = post.price_per_day
-    carContract.mortgage = post.mortgage
-    carContract.over_limit_fee = post.over_limit_fee
-    carContract.over_time_fee = post.over_time_fee
-    carContract.cleaning_fee = post.cleaning_fee
-    carContract.deodorization_fee = post.deodorization_fee
-    carContract.num_of_days = Math.ceil(
-      (carContract.end_date.getTime() - carContract.start_date.getTime()) / (1000 * 3600 * 24),
+    if (post.owner.id !== request.owner_id) {
+      throw new BadRequestException('Owner is not correct')
+    }
+
+    const carContractData = new CarContract()
+    carContractData.renter_id = request.renter_id
+    carContractData.owner_id = request.owner_id
+    carContractData.post_id = request.post_id
+    carContractData.start_date = new Date(request.start_date_ts)
+    carContractData.end_date = new Date(request.end_date_ts)
+    carContractData.contract_status = CarContractStatus.WAITING_APPROVAL
+    carContractData.car_info_snapshot = 'car_info_summary'
+    carContractData.price_per_day = post.price_per_day
+    carContractData.mortgage = post.mortgage
+    carContractData.over_limit_fee = post.over_limit_fee
+    carContractData.over_time_fee = post.over_time_fee
+    carContractData.cleaning_fee = post.cleaning_fee
+    carContractData.deodorization_fee = post.deodorization_fee
+    carContractData.num_of_days = Math.ceil(
+      (carContractData.end_date.getTime() - carContractData.start_date.getTime()) /
+        (1000 * 3600 * 24),
     )
 
-    const carContractResult = await this.carContractRepository.save(carContract)
+    const carContract = await this.carContractRepository.save(carContractData)
 
-    return carContractResult
+    return {
+      id: carContract.id,
+      post_id: carContract.post_id,
+      owner: {
+        id: post.owner.id,
+        email: post.owner.email,
+        full_name: post.owner.username,
+        phone_number: post.owner.phone_number,
+      },
+      renter: {
+        id: renter.id,
+        email: renter.email,
+        full_name: renter.username,
+        phone_number: renter.phone_number,
+      },
+      contractFulfillment: null,
+      contractTxHistories: [],
+      contract_status: carContract.contract_status,
+      start_date: carContract.start_date,
+      end_date: carContract.end_date,
+      renter_wallet_address: carContract.renter_wallet_address,
+      owner_wallet_address: carContract.owner_wallet_address,
+      car_info_snapshot: carContract.car_info_snapshot,
+      price_per_day: carContract.price_per_day,
+      mortgage: carContract.mortgage,
+      over_limit_fee: carContract.over_limit_fee,
+      over_time_fee: carContract.over_time_fee,
+      cleaning_fee: carContract.cleaning_fee,
+      deodorization_fee: carContract.deodorization_fee,
+      num_of_days: carContract.num_of_days,
+      created_at: carContract.created_at,
+      updated_at: carContract.updated_at,
+      reviews: [],
+    }
   }
 
   async ownerRejectCarContract(contractId: number, owner: User) {
@@ -314,6 +416,7 @@ export class CarContractService {
       contract_id: carContract.id,
       tx_hash: txHash,
       tx_type: ContractTransactionType.PAYMENT,
+      tx_value: txInfo.value,
       created_at: new Date(txInfo.timestamp * 1000),
     })
 

@@ -53,6 +53,7 @@ export class CarContractEventService {
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_OWNER_REJECT,
+      tx_value: 0,
     })
   }
 
@@ -71,6 +72,7 @@ export class CarContractEventService {
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_OWNER_CANCEL,
+      tx_value: 0,
     })
   }
 
@@ -89,6 +91,7 @@ export class CarContractEventService {
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_RENTAL_CANCEL,
+      tx_value: 0,
     })
   }
 
@@ -107,6 +110,7 @@ export class CarContractEventService {
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_ADMIN_CANCEL,
+      tx_value: 0,
     })
   }
 
@@ -125,6 +129,7 @@ export class CarContractEventService {
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.CAR_CONTRACT_STARTED,
+      tx_value: 0,
     })
   }
 
@@ -152,6 +157,7 @@ export class CarContractEventService {
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.CAR_CONTRACT_ENDED,
+      tx_value: 0,
     })
   }
 
@@ -163,6 +169,7 @@ export class CarContractEventService {
       contract_id: contract.contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.CAR_CONTRACT_CREATE,
+      tx_value: 0,
     })
   }
 
