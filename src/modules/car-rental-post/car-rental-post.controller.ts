@@ -59,7 +59,7 @@ export class CarRentalPostController {
   })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Get(':post_id')
+  @Get(':post_id/detail')
   async getCarRentalPostDetail(@Param() {post_id}: CarRentalPostParam) {
     return this.carRentalPostService.getCarRentalPostDetail(post_id)
   }

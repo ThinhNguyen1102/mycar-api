@@ -45,13 +45,13 @@ export class CarContractService {
         owner: {
           id: contract.owner.id,
           email: contract.owner.email,
-          full_name: contract.owner.username,
+          username: contract.owner.username,
           phone_number: contract.owner.phone_number,
         },
         renter: {
           id: contract.renter.id,
           email: contract.renter.email,
-          full_name: contract.renter.username,
+          username: contract.renter.username,
           phone_number: contract.renter.phone_number,
         },
         contractFulfillment: contract.contractFulfillment
@@ -71,6 +71,7 @@ export class CarContractService {
             id: tx.id,
             tx_hash: tx.tx_hash,
             tx_type: tx.tx_type,
+            tx_value: tx.tx_value,
             created_at: tx.created_at,
           }
         }),
@@ -92,6 +93,83 @@ export class CarContractService {
         reviews: contract.reviews,
       }
     })
+  }
+
+  async getCarContractWithId(contractId: number, user: User) {
+    const carContract = await this.carContractRepository
+      .createQueryBuilder('cc')
+      .where('cc.id = :id AND (cc.renter_id = :uid OR cc.owner_id = :uid)', {
+        id: contractId,
+        uid: user.id,
+      })
+      .leftJoinAndSelect('cc.owner', 'owner')
+      .leftJoinAndSelect('cc.renter', 'renter')
+      .leftJoinAndSelect('cc.contractFulfillment', 'contractFulfillment')
+      .leftJoinAndSelect('cc.reviews', 'reviews')
+      .leftJoinAndSelect('cc.contractTxHistories', 'contractTxHistories')
+      .getOne()
+
+    if (!carContract) {
+      throw new BadRequestException('Contract not found')
+    }
+
+    if (carContract.renter_id !== user.id && carContract.owner_id !== user.id) {
+      throw new BadRequestException('You are not the owner or renter of this contract')
+    }
+
+    return {
+      id: carContract.id,
+      post_id: carContract.post_id,
+      owner: {
+        id: carContract.owner.id,
+        email: carContract.owner.email,
+        username: carContract.owner.username,
+        phone_number: carContract.owner.phone_number,
+      },
+      renter: {
+        id: carContract.renter.id,
+        email: carContract.renter.email,
+        username: carContract.renter.username,
+        phone_number: carContract.renter.phone_number,
+      },
+      contractFulfillment: carContract.contractFulfillment
+        ? {
+            id: carContract.contractFulfillment.id,
+            has_cleaning_fee: carContract.contractFulfillment.has_cleaning_fee,
+            has_deodorization_fee: carContract.contractFulfillment.has_deodorization_fee,
+            has_over_limit_fee: carContract.contractFulfillment.has_over_limit_fee,
+            has_over_time_fee: carContract.contractFulfillment.has_over_time_fee,
+            over_time_hours: carContract.contractFulfillment.over_time_hours,
+            other_fee: carContract.contractFulfillment.other_fee,
+            other_fee_detail: carContract.contractFulfillment.other_fee_detail,
+          }
+        : null,
+      contractTxHistories: carContract.contractTxHistories.map(tx => {
+        return {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        }
+      }),
+      contract_status: carContract.contract_status,
+      start_date: carContract.start_date,
+      end_date: carContract.end_date,
+      renter_wallet_address: carContract.renter_wallet_address,
+      owner_wallet_address: carContract.owner_wallet_address,
+      car_info_snapshot: carContract.car_info_snapshot,
+      price_per_day: carContract.price_per_day,
+      mortgage: carContract.mortgage,
+      over_limit_fee: carContract.over_limit_fee,
+      over_time_fee: carContract.over_time_fee,
+      cleaning_fee: carContract.cleaning_fee,
+      deodorization_fee: carContract.deodorization_fee,
+      num_of_days: carContract.num_of_days,
+      created_at: carContract.created_at,
+      updated_at: carContract.updated_at,
+      reviews: [],
+    }
   }
 
   async createCarContract(request: CreateCarContractReq, renter: User) {
@@ -141,13 +219,13 @@ export class CarContractService {
       owner: {
         id: post.owner.id,
         email: post.owner.email,
-        full_name: post.owner.username,
+        username: post.owner.username,
         phone_number: post.owner.phone_number,
       },
       renter: {
         id: renter.id,
         email: renter.email,
-        full_name: renter.username,
+        username: renter.username,
         phone_number: renter.phone_number,
       },
       contractFulfillment: null,

@@ -34,6 +34,21 @@ export class CarContractController {
     status: HttpStatus.OK,
   })
   @ApiOperation({
+    operationId: 'get-car-contract-detail',
+    summary: 'Get car contract detail',
+    description: 'Get car contract detail',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get(':contractId/detail')
+  async getCarContractDetail(@CurrentUser() user: User, @Param() {contractId}: CarContractIdParam) {
+    return await this.carContractService.getCarContractWithId(contractId, user)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
     operationId: 'create-car-contract',
     summary: 'Create car contract',
     description: 'Create car contract',
