@@ -2,16 +2,17 @@ import {ApiProperty} from '@nestjs/swagger'
 import {IsBoolean, IsNotEmpty, IsNumber, Min} from 'class-validator'
 
 export class EndCarContractReq {
-  @ApiProperty({type: Boolean, required: true})
+  @ApiProperty({type: Number, required: true})
   @IsNotEmpty()
-  @IsBoolean()
-  is_over_limit_fee: boolean
+  @IsNumber()
+  @Min(0)
+  over_limit_km: number
 
   @ApiProperty({type: Number, required: true})
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  over_time: number
+  over_time_hours: number
 
   @ApiProperty({type: Boolean, required: true})
   @IsNotEmpty()

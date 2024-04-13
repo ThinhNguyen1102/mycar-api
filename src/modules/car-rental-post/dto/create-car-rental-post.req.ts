@@ -71,7 +71,7 @@ export class CarRentalPostDto extends CarRentalPostAddressDto {
 
   @ApiProperty({type: String, required: true})
   @IsString()
-  @Length(8, 9)
+  @Length(6, 9)
   @IsNotEmpty()
   license_plate: string
 

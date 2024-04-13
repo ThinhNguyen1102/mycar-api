@@ -148,9 +148,10 @@ export class CarContractEventService {
       contract_id: contract_id,
       has_cleaning_fee: surcharge.is_cleaning_fee,
       has_deodorization_fee: surcharge.is_deodorization_fee,
-      has_over_limit_fee: surcharge.is_over_limit_fee,
-      has_over_time_fee: surcharge.over_time > 0,
-      over_time_hours: surcharge.over_time,
+      has_over_limit_fee: surcharge.over_limit_km > 0,
+      over_limit_km: surcharge.over_limit_km,
+      has_over_time_fee: surcharge.over_time_hours > 0,
+      over_time_hours: surcharge.over_time_hours,
     })
 
     await this.contractTxHistoryRepository.save({

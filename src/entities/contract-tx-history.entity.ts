@@ -19,7 +19,7 @@ export class ContractTxHistory extends CommonEntity {
   tx_type: ContractTransactionType
 
   @ApiResponseProperty({type: Number})
-  @Column({type: 'double precision', nullable: true})
+  @Column({type: 'double precision', nullable: false})
   tx_value: number
 
   // relation

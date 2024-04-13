@@ -8,6 +8,8 @@ import {CarImageRepository} from 'src/repositories/car-image.repository'
 import {CarFeatureRepository} from 'src/repositories/car-feature.repository'
 import {In} from 'typeorm'
 import {CarRentalPostFeatureRepository} from 'src/repositories/car-rental-post-feature.repository'
+import {CarContract} from 'src/entities/car-contract.entity'
+import {CarContractStatus} from 'src/common/enums/car-contract.enum'
 
 @Injectable()
 export class CarRentalPostService {
@@ -152,6 +154,19 @@ export class CarRentalPostService {
       .leftJoinAndSelect('crp.carRentalPostAddress', 'carRentalPostAddress')
       .leftJoinAndSelect('crp.carRentalPostFeatures', 'carRentalPostFeatures')
       .leftJoinAndSelect('carRentalPostFeatures.carFeature', 'carFeature')
+      .leftJoinAndMapMany(
+        'crp.carContracts',
+        CarContract,
+        'cc',
+        'cc.contract_status in (:...statuses) and cc.post_id = crp.id',
+        {
+          statuses: [
+            CarContractStatus.WAITING_APPROVAL,
+            CarContractStatus.APPROVED,
+            CarContractStatus.STARTED,
+          ],
+        },
+      )
       .getOne()
 
     if (!carRentalPost) {
@@ -174,6 +189,13 @@ export class CarRentalPostService {
         district_name: carRentalPost.carRentalPostAddress.district_name,
         prefecture_name: carRentalPost.carRentalPostAddress.prefecture_name,
       },
+      carContracts: carRentalPost.carContracts.map(contract => {
+        return {
+          id: contract.id,
+          start_date: contract.start_date,
+          end_date: contract.end_date,
+        }
+      }),
     }
   }
 

@@ -30,6 +30,10 @@ export class ContractFulfillment extends CommonEntity {
   over_time_hours: number
 
   @ApiResponseProperty({type: Number})
+  @Column({type: Number, nullable: false})
+  over_limit_km: number
+
+  @ApiResponseProperty({type: Number})
   @Column({type: Number, nullable: true})
   other_fee: number
 

@@ -60,6 +60,7 @@ export class CarContractService {
               has_cleaning_fee: contract.contractFulfillment.has_cleaning_fee,
               has_deodorization_fee: contract.contractFulfillment.has_deodorization_fee,
               has_over_limit_fee: contract.contractFulfillment.has_over_limit_fee,
+              over_time_km: contract.contractFulfillment.over_limit_km,
               has_over_time_fee: contract.contractFulfillment.has_over_time_fee,
               over_time_hours: contract.contractFulfillment.over_time_hours,
               other_fee: contract.contractFulfillment.other_fee,
@@ -138,6 +139,7 @@ export class CarContractService {
             has_cleaning_fee: carContract.contractFulfillment.has_cleaning_fee,
             has_deodorization_fee: carContract.contractFulfillment.has_deodorization_fee,
             has_over_limit_fee: carContract.contractFulfillment.has_over_limit_fee,
+            over_limit_km: carContract.contractFulfillment.over_limit_km,
             has_over_time_fee: carContract.contractFulfillment.has_over_time_fee,
             over_time_hours: carContract.contractFulfillment.over_time_hours,
             other_fee: carContract.contractFulfillment.other_fee,
@@ -270,7 +272,7 @@ export class CarContractService {
 
     this.eventEmitter.emit(CALL_EVENTS.REFUND_OWNER_REJECTED, {
       contract_id: contract.id,
-      renter_wallet_address: contract.renter_wallet_address,
+      renter_address: contract.renter_wallet_address,
       amount: contract.num_of_days * contract.price_per_day + contract.mortgage,
     })
 
