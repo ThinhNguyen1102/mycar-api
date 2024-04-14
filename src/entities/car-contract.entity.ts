@@ -80,6 +80,10 @@ export class CarContract extends CommonEntity {
   @Column({type: Number, nullable: false})
   num_of_days: number
 
+  @ApiResponseProperty({type: Boolean})
+  @Column({type: Boolean, nullable: false, default: false})
+  is_processing: boolean
+
   // relation
   @ManyToOne(() => CarRentalPost, carRentalPost => carRentalPost.carContracts, {
     onDelete: 'CASCADE',

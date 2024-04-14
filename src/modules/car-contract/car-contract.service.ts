@@ -89,6 +89,7 @@ export class CarContractService {
         cleaning_fee: contract.cleaning_fee,
         deodorization_fee: contract.deodorization_fee,
         num_of_days: contract.num_of_days,
+        is_processing: contract.is_processing,
         created_at: contract.created_at,
         updated_at: contract.updated_at,
         reviews: contract.reviews,
@@ -168,6 +169,7 @@ export class CarContractService {
       cleaning_fee: carContract.cleaning_fee,
       deodorization_fee: carContract.deodorization_fee,
       num_of_days: carContract.num_of_days,
+      is_processing: carContract.is_processing,
       created_at: carContract.created_at,
       updated_at: carContract.updated_at,
       reviews: [],
@@ -258,6 +260,10 @@ export class CarContractService {
       },
     })
 
+    if (contract.is_processing) {
+      throw new BadRequestException('Contract is processing, please wait a few minutes')
+    }
+
     if (contract.owner_id !== owner.id) {
       throw new BadRequestException('You are not the owner of this contract')
     }
@@ -276,6 +282,9 @@ export class CarContractService {
       amount: contract.num_of_days * contract.price_per_day + contract.mortgage,
     })
 
+    contract.is_processing = true
+    await this.carContractRepository.save(contract)
+
     return new SuccessRes(
       'Owner reject contract successfully! Please check your wallet in a few minutes',
     )
@@ -287,6 +296,10 @@ export class CarContractService {
         id: contractId,
       },
     })
+
+    if (contract.is_processing) {
+      throw new BadRequestException('Contract is processing, please wait a few minutes')
+    }
 
     if (contract.owner_id !== owner.id) {
       throw new BadRequestException('You are not the owner of this contract')
@@ -300,6 +313,9 @@ export class CarContractService {
       contract_id: contract.id,
     })
 
+    contract.is_processing = true
+    await this.carContractRepository.save(contract)
+
     return new SuccessRes(
       'Owner cancel contract successfully! Please check your wallet in a few minutes',
     )
@@ -311,6 +327,10 @@ export class CarContractService {
         id: contractId,
       },
     })
+
+    if (contract.is_processing) {
+      throw new BadRequestException('Contract is processing, please wait a few minutes')
+    }
 
     if (contract.renter_id !== renter.id) {
       throw new BadRequestException('You are not the renter of this contract')
@@ -324,6 +344,9 @@ export class CarContractService {
       contract_id: contract.id,
     })
 
+    contract.is_processing = true
+    await this.carContractRepository.save(contract)
+
     return new SuccessRes(
       'Renter cancel contract successfully! Please check your wallet in a few minutes',
     )
@@ -335,6 +358,10 @@ export class CarContractService {
         id: contractId,
       },
     })
+
+    if (contract.is_processing) {
+      throw new BadRequestException('Contract is processing, please wait a few minutes')
+    }
 
     if (contract.renter_id !== renter.id) {
       throw new BadRequestException('You are not the renter of this contract')
@@ -348,6 +375,9 @@ export class CarContractService {
       contract_id: contract.id,
     })
 
+    contract.is_processing = true
+    await this.carContractRepository.save(contract)
+
     return new SuccessRes('Contract started successfully!')
   }
 
@@ -357,6 +387,10 @@ export class CarContractService {
         id: contractId,
       },
     })
+
+    if (contract.is_processing) {
+      throw new BadRequestException('Contract is processing, please wait a few minutes')
+    }
 
     if (contract.owner_id !== owner.id) {
       throw new BadRequestException('You are not the owner of this contract')
@@ -370,6 +404,9 @@ export class CarContractService {
       contract_id: contract.id,
       surcharge: request,
     })
+
+    contract.is_processing = true
+    await this.carContractRepository.save(contract)
 
     return new SuccessRes('Contract ended successfully! Please check your wallet in a few minutes')
   }
@@ -386,11 +423,18 @@ export class CarContractService {
       },
     })
 
+    if (contract.is_processing) {
+      throw new BadRequestException('Contract is processing, please wait a few minutes')
+    }
+
     if (contract.contract_status !== CarContractStatus.APPROVED) {
       throw new BadRequestException('Contract is not approved or started')
     }
 
     this.eventEmitter.emit(CALL_EVENTS.REFUND_ADMIN_CANCEL, contract.id)
+
+    contract.is_processing = true
+    await this.carContractRepository.save(contract)
 
     return new SuccessRes(
       'Admin cancel contract successfully! Please check your wallet in a few minutes',
@@ -426,6 +470,10 @@ export class CarContractService {
 
     if (!carContract) {
       throw new BadRequestException('Contract not found')
+    }
+
+    if (carContract.is_processing) {
+      throw new BadRequestException('Contract is processing, please wait a few minutes')
     }
 
     if (carContract.contract_status !== CarContractStatus.WAITING_APPROVAL) {
@@ -488,6 +536,8 @@ export class CarContractService {
       }
 
       this.eventEmitter.emit(CALL_EVENTS.CREATE_CAR_CONTRACT, carContractSm)
+
+      carContract.is_processing = true
     }
 
     await this.carContractRepository.save(carContract)

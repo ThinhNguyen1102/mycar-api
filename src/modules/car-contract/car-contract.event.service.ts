@@ -46,7 +46,7 @@ export class CarContractEventService {
       {
         id: contract_id,
       },
-      {contract_status: CarContractStatus.REJECTED},
+      {contract_status: CarContractStatus.REJECTED, is_processing: false},
     )
 
     await this.contractTxHistoryRepository.save({
@@ -65,7 +65,7 @@ export class CarContractEventService {
       {
         id: contract_id,
       },
-      {contract_status: CarContractStatus.CANCELED},
+      {contract_status: CarContractStatus.CANCELED, is_processing: false},
     )
 
     await this.contractTxHistoryRepository.save({
@@ -84,7 +84,7 @@ export class CarContractEventService {
       {
         id: contract_id,
       },
-      {contract_status: CarContractStatus.CANCELED},
+      {contract_status: CarContractStatus.CANCELED, is_processing: false},
     )
 
     await this.contractTxHistoryRepository.save({
@@ -103,7 +103,7 @@ export class CarContractEventService {
       {
         id: contract_id,
       },
-      {contract_status: CarContractStatus.CANCELED},
+      {contract_status: CarContractStatus.CANCELED, is_processing: false},
     )
 
     await this.contractTxHistoryRepository.save({
@@ -122,7 +122,7 @@ export class CarContractEventService {
       {
         id: contract_id,
       },
-      {contract_status: CarContractStatus.STARTED},
+      {contract_status: CarContractStatus.STARTED, is_processing: false},
     )
 
     await this.contractTxHistoryRepository.save({
@@ -141,7 +141,7 @@ export class CarContractEventService {
       {
         id: contract_id,
       },
-      {contract_status: CarContractStatus.ENDED},
+      {contract_status: CarContractStatus.ENDED, is_processing: false},
     )
 
     await this.contractFulfillmentRepository.save({
@@ -172,6 +172,16 @@ export class CarContractEventService {
       tx_type: ContractTransactionType.CAR_CONTRACT_CREATE,
       tx_value: 0,
     })
+
+    await this.carContractRepository.update(
+      {
+        id: contract.contract_id,
+      },
+      {
+        contract_status: CarContractStatus.APPROVED,
+        is_processing: false,
+      },
+    )
   }
 
   @OnEvent(LISTEN_EVENTS.PAYMENT_RECEIVED)
@@ -182,15 +192,6 @@ export class CarContractEventService {
   @OnEvent(LISTEN_EVENTS.CAR_CONTRACT_CREATED)
   async handleCarContractCreatedEvent(event: CarContractCreatedEvent) {
     console.log('CarContractCreatedEvent', event)
-
-    await this.carContractRepository.update(
-      {
-        id: event.contract_id,
-      },
-      {
-        contract_status: CarContractStatus.APPROVED,
-      },
-    )
   }
 
   @OnEvent(LISTEN_EVENTS.REFUNDED_OWNER_REJECTED)
