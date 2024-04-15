@@ -13,6 +13,7 @@ import {CarContractModule} from './modules/car-contract/car-contract.module'
 import {CarRentaPostModule} from './modules/car-rental-post/car-rental-post.module'
 import {EventEmitterModule} from '@nestjs/event-emitter'
 import {UserModule} from './modules/user/user.module'
+import {PusherModule} from './modules/pusher/pusher.module'
 
 @Module({
   imports: [
@@ -70,6 +71,18 @@ import {UserModule} from './modules/user/user.module'
           options: {
             gasLimit: Number(configService.get('contract.gas_limit')),
           },
+        }
+      },
+      inject: [ConfigService],
+    }),
+    PusherModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          app_id: configService.get('pusher.app_id'),
+          key: configService.get('pusher.key'),
+          secret: configService.get('pusher.secret'),
+          cluster: configService.get('pusher.cluster'),
         }
       },
       inject: [ConfigService],

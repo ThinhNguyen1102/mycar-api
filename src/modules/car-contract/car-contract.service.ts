@@ -16,6 +16,7 @@ import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.
 import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum'
 import {EventEmitter2} from '@nestjs/event-emitter'
 import {CALL_EVENTS} from 'src/common/constants/event.const'
+import {PusherService} from '../pusher/pusher.service'
 
 @Injectable()
 export class CarContractService {
@@ -25,6 +26,7 @@ export class CarContractService {
     private readonly carContractRepository: CarContractRepository,
     private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
     private readonly eventEmitter: EventEmitter2,
+    private readonly pusherService: PusherService,
   ) {}
 
   async getAllCarContract(user: User) {
