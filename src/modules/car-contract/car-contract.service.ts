@@ -16,7 +16,8 @@ import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.
 import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum'
 import {EventEmitter2} from '@nestjs/event-emitter'
 import {CALL_EVENTS} from 'src/common/constants/event.const'
-import {PusherService} from '../pusher/pusher.service'
+import {GetContractsQuery} from './dto/get-contracts.query'
+import {paginateResponse} from 'src/utils/helpers'
 
 @Injectable()
 export class CarContractService {
@@ -26,21 +27,68 @@ export class CarContractService {
     private readonly carContractRepository: CarContractRepository,
     private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
     private readonly eventEmitter: EventEmitter2,
-    private readonly pusherService: PusherService,
   ) {}
 
-  async getAllCarContract(user: User) {
-    const carContracts = await this.carContractRepository
+  async getAllCarContract(user: User, query: GetContractsQuery) {
+    let carContractsQuery = this.carContractRepository
       .createQueryBuilder('cc')
-      .where('cc.renter_id = :id OR cc.owner_id = :id', {id: user.id})
+      .where('(cc.renter_id = :id OR cc.owner_id = :id)', {id: user.id})
+
+    switch (query.status) {
+      case CarContractStatus.WAITING_APPROVAL:
+        carContractsQuery.andWhere('cc.contract_status = :status', {
+          status: CarContractStatus.WAITING_APPROVAL,
+        })
+        break
+      case CarContractStatus.REJECTED:
+        carContractsQuery.andWhere('cc.contract_status = :status', {
+          status: CarContractStatus.REJECTED,
+        })
+        break
+      case CarContractStatus.APPROVED:
+        carContractsQuery.andWhere('cc.contract_status = :status', {
+          status: CarContractStatus.APPROVED,
+        })
+        break
+      case CarContractStatus.CANCELED:
+        carContractsQuery.andWhere('cc.contract_status = :status', {
+          status: CarContractStatus.CANCELED,
+        })
+        break
+      case CarContractStatus.STARTED:
+        carContractsQuery.andWhere('cc.contract_status = :status', {
+          status: CarContractStatus.STARTED,
+        })
+        break
+      case CarContractStatus.ENDED:
+        carContractsQuery = carContractsQuery.andWhere('cc.contract_status = :status', {
+          status: CarContractStatus.ENDED,
+        })
+        break
+      default:
+        break
+    }
+
+    const count = await carContractsQuery.getCount()
+
+    if (query.order_by === 'updated_at') {
+      carContractsQuery.orderBy('cc.updated_at', query.order || 'ASC')
+    } else {
+      carContractsQuery.orderBy('cc.start_date', query.order || 'ASC')
+    }
+
+    carContractsQuery = carContractsQuery
       .leftJoinAndSelect('cc.owner', 'owner')
       .leftJoinAndSelect('cc.renter', 'renter')
       .leftJoinAndSelect('cc.contractFulfillment', 'contractFulfillment')
       .leftJoinAndSelect('cc.reviews', 'reviews')
       .leftJoinAndSelect('cc.contractTxHistories', 'contractTxHistories')
-      .getMany()
+      .skip((query.page - 1) * query.limit)
+      .take(query.limit)
 
-    return carContracts.map(contract => {
+    const carContracts = await carContractsQuery.getMany()
+
+    const formatterData = carContracts.map(contract => {
       return {
         id: contract.id,
         post_id: contract.post_id,
@@ -97,6 +145,8 @@ export class CarContractService {
         reviews: contract.reviews,
       }
     })
+
+    return paginateResponse(formatterData, count, query.page, query.limit)
   }
 
   async getCarContractWithId(contractId: number, user: User) {

@@ -1,4 +1,4 @@
-import {Body, Controller, Get, HttpStatus, Param, Post, UseGuards} from '@nestjs/common'
+import {Body, Controller, Get, HttpStatus, Param, Post, Query, UseGuards} from '@nestjs/common'
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger'
 import {CarContractService} from './car-contract.service'
 import {JwtAuthGuard} from 'src/common/guards/jwt-auth.guard'
@@ -9,6 +9,7 @@ import {CarContractIdParam} from './dto/car-contract.param'
 import {SuccessRes} from 'src/common/types/response'
 import {EndCarContractReq} from './dto/end-car-contract.req'
 import {PaymentConfirmReq} from './dto/payment-confirm.req'
+import {GetContractsQuery} from './dto/get-contracts.query'
 
 @ApiTags('Contract')
 @Controller('car-contracts')
@@ -26,8 +27,8 @@ export class CarContractController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('')
-  async getAllCarContract(@CurrentUser() user: User) {
-    return await this.carContractService.getAllCarContract(user)
+  async getAllCarContract(@CurrentUser() user: User, @Query() query: GetContractsQuery) {
+    return await this.carContractService.getAllCarContract(user, query)
   }
 
   @ApiResponse({
