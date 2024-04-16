@@ -24,6 +24,7 @@ import {ContractService} from '../contract/contract.service'
 import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum'
 import {CALL_EVENTS, LISTEN_EVENTS} from 'src/common/constants/event.const'
 import {ContractFulfillmentRepository} from 'src/repositories/contract-fulfillment.repository'
+import {PusherService} from '../pusher/pusher.service'
 
 @Injectable()
 export class CarContractEventService {
@@ -32,6 +33,7 @@ export class CarContractEventService {
     private readonly contractService: ContractService,
     private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
     private readonly contractFulfillmentRepository: ContractFulfillmentRepository,
+    private readonly pusherService: PusherService,
   ) {}
 
   @OnEvent(CALL_EVENTS.REFUND_OWNER_REJECTED)
@@ -49,12 +51,26 @@ export class CarContractEventService {
       {contract_status: CarContractStatus.REJECTED, is_processing: false},
     )
 
-    await this.contractTxHistoryRepository.save({
+    const tx = await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_OWNER_REJECT,
       tx_value: 0,
     })
+
+    if (tx) {
+      this.pusherService.trigger(`car-contract-${contract_id}`, 'car-contract::update', {
+        type: CALL_EVENTS.REFUND_OWNER_REJECTED,
+        contract_id: contract_id,
+        tx: {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        },
+      })
+    }
   }
 
   @OnEvent(CALL_EVENTS.REFUND_OWNER_CANCELED)
@@ -68,12 +84,26 @@ export class CarContractEventService {
       {contract_status: CarContractStatus.CANCELED, is_processing: false},
     )
 
-    await this.contractTxHistoryRepository.save({
+    const tx = await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_OWNER_CANCEL,
       tx_value: 0,
     })
+
+    if (tx) {
+      this.pusherService.trigger(`car-contract-${contract_id}`, 'car-contract::update', {
+        type: CALL_EVENTS.REFUND_OWNER_CANCELED,
+        contract_id: contract_id,
+        tx: {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        },
+      })
+    }
   }
 
   @OnEvent(CALL_EVENTS.REFUND_RENTER_CANCELED)
@@ -87,12 +117,26 @@ export class CarContractEventService {
       {contract_status: CarContractStatus.CANCELED, is_processing: false},
     )
 
-    await this.contractTxHistoryRepository.save({
+    const tx = await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_RENTAL_CANCEL,
       tx_value: 0,
     })
+
+    if (tx) {
+      this.pusherService.trigger(`car-contract-${contract_id}`, 'car-contract::update', {
+        type: CALL_EVENTS.REFUND_RENTER_CANCELED,
+        contract_id: contract_id,
+        tx: {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        },
+      })
+    }
   }
 
   @OnEvent(CALL_EVENTS.REFUND_ADMIN_CANCEL)
@@ -106,12 +150,26 @@ export class CarContractEventService {
       {contract_status: CarContractStatus.CANCELED, is_processing: false},
     )
 
-    await this.contractTxHistoryRepository.save({
+    const tx = await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.REFUND_ADMIN_CANCEL,
       tx_value: 0,
     })
+
+    if (tx) {
+      this.pusherService.trigger(`car-contract-${contract_id}`, 'car-contract::update', {
+        type: CALL_EVENTS.REFUND_ADMIN_CANCEL,
+        contract_id: contract_id,
+        tx: {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        },
+      })
+    }
   }
 
   @OnEvent(CALL_EVENTS.START_CAR_CONTRACT)
@@ -125,12 +183,26 @@ export class CarContractEventService {
       {contract_status: CarContractStatus.STARTED, is_processing: false},
     )
 
-    await this.contractTxHistoryRepository.save({
+    const tx = await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.CAR_CONTRACT_STARTED,
       tx_value: 0,
     })
+
+    if (tx) {
+      this.pusherService.trigger(`car-contract-${contract_id}`, 'car-contract::update', {
+        type: CALL_EVENTS.START_CAR_CONTRACT,
+        contract_id: contract_id,
+        tx: {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        },
+      })
+    }
   }
 
   @OnEvent(CALL_EVENTS.END_CAR_CONTRACT)
@@ -154,19 +226,33 @@ export class CarContractEventService {
       over_time_hours: surcharge.over_time_hours,
     })
 
-    await this.contractTxHistoryRepository.save({
+    const tx = await this.contractTxHistoryRepository.save({
       contract_id: contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.CAR_CONTRACT_ENDED,
       tx_value: 0,
     })
+
+    if (tx) {
+      this.pusherService.trigger(`car-contract-${contract_id}`, 'car-contract::update', {
+        type: CALL_EVENTS.END_CAR_CONTRACT,
+        contract_id: contract_id,
+        tx: {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        },
+      })
+    }
   }
 
   @OnEvent(CALL_EVENTS.CREATE_CAR_CONTRACT)
   async handleCallCreateContract(contract: CarContractSM) {
     const txResponse = await this.contractService.createCarContact(contract)
 
-    await this.contractTxHistoryRepository.save({
+    const tx = await this.contractTxHistoryRepository.save({
       contract_id: contract.contract_id,
       tx_hash: txResponse.transactionHash,
       tx_type: ContractTransactionType.CAR_CONTRACT_CREATE,
@@ -182,6 +268,20 @@ export class CarContractEventService {
         is_processing: false,
       },
     )
+
+    if (tx) {
+      this.pusherService.trigger(`car-contract-${contract.contract_id}`, 'car-contract::update', {
+        type: CALL_EVENTS.CREATE_CAR_CONTRACT,
+        contract_id: contract.contract_id,
+        tx: {
+          id: tx.id,
+          tx_hash: tx.tx_hash,
+          tx_type: tx.tx_type,
+          tx_value: tx.tx_value,
+          created_at: tx.created_at,
+        },
+      })
+    }
   }
 
   @OnEvent(LISTEN_EVENTS.PAYMENT_RECEIVED)
@@ -192,35 +292,63 @@ export class CarContractEventService {
   @OnEvent(LISTEN_EVENTS.CAR_CONTRACT_CREATED)
   async handleCarContractCreatedEvent(event: CarContractCreatedEvent) {
     console.log('CarContractCreatedEvent', event)
+    // this.pusherService.trigger(`car-contract-${event.contract_id}`, 'car-contract::update', {
+    //   type: CALL_EVENTS.CREATE_CAR_CONTRACT,
+    //   contract_id: event.contract_id,
+    // })
   }
 
   @OnEvent(LISTEN_EVENTS.REFUNDED_OWNER_REJECTED)
   async handleRefundedOwnerRejectedEvent(event: RefundedOwnerRejectedEvent) {
     console.log('RefundedOwnerRejectedEvent', event)
+    // this.pusherService.trigger(`car-contract-${event.contract_id}`, 'car-contract::update', {
+    //   type: CALL_EVENTS.REFUND_OWNER_REJECTED,
+    //   contract_id: event.contract_id,
+    // })
   }
 
   @OnEvent(LISTEN_EVENTS.REFUNDED_OWNER_CANCELED)
   async handleRefundedOwnerCanceledEvent(event: RefundedOwnerCanceledEvent) {
     console.log('RefundedOwnerCanceledEvent', event)
+    // this.pusherService.trigger(`car-contract-${event.contract_id}`, 'car-contract::update', {
+    //   type: CALL_EVENTS.REFUND_OWNER_CANCELED,
+    //   contract_id: event.contract_id,
+    // })
   }
 
   @OnEvent(LISTEN_EVENTS.REFUNDED_RENTER_CANCELED)
   async handleRefundedRenterCanceledEvent(event: RefundedRenterCanceledEvent) {
     console.log('RefundedRenterCanceledEvent', event)
+    // this.pusherService.trigger(`car-contract-${event.contract_id}`, 'car-contract::update', {
+    //   type: CALL_EVENTS.REFUND_RENTER_CANCELED,
+    //   contract_id: event.contract_id,
+    // })
   }
 
   @OnEvent(LISTEN_EVENTS.REFUNDED_ADMIN_CANCEL)
   async handleCarContractRefundedEvent(event: CarContractRefundedEvent) {
     console.log('CarContractRefundedEvent', event)
+    // this.pusherService.trigger(`car-contract-${event.contract_id}`, 'car-contract::update', {
+    //   type: CALL_EVENTS.REFUND_ADMIN_CANCEL,
+    //   contract_id: event.contract_id,
+    // })
   }
 
   @OnEvent(LISTEN_EVENTS.CAR_CONTRACT_STARTED)
   async handleCarContractStartedEvent(event: CarContractStartedEvent) {
     console.log('CarContractStartedEvent', event)
+    // this.pusherService.trigger(`car-contract-${event.contract_id}`, 'car-contract::update', {
+    //   type: CALL_EVENTS.START_CAR_CONTRACT,
+    //   contract_id: event.contract_id,
+    // })
   }
 
   @OnEvent(LISTEN_EVENTS.CAR_CONTRACT_ENDED)
   async handleCarContractEndedEvent(event: CarContractEndedEvent) {
     console.log('CarContractEndedEvent', event)
+    // this.pusherService.trigger(`car-contract-${event.contract_id}`, 'car-contract::update', {
+    //   type: CALL_EVENTS.END_CAR_CONTRACT,
+    //   contract_id: event.contract_id,
+    // })
   }
 }
