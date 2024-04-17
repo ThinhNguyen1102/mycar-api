@@ -1,13 +1,9 @@
 import {ApiProperty} from '@nestjs/swagger'
 import {Type} from 'class-transformer'
 import {IsNotEmpty, IsNumber, IsOptional, Min} from 'class-validator'
-import {CarContractStatus} from 'src/common/enums/car-contract.enum'
+import {Fuel} from 'src/common/enums/car-rental-post.enum'
 
-export class GetContractsQuery {
-  @ApiProperty({type: String})
-  @IsNotEmpty()
-  type: 'owner' | 'renter'
-
+export class GetCarRentalPostsQuery {
   @ApiProperty({
     type: Number,
     example: 1,
@@ -32,13 +28,25 @@ export class GetContractsQuery {
   @Type(() => Number)
   limit: number
 
-  @ApiProperty({type: CarContractStatus})
+  @ApiProperty({type: Fuel})
   @IsOptional()
-  status?: CarContractStatus
+  fuel?: Fuel
+
+  @ApiProperty({type: Number})
+  @IsOptional()
+  num_seat?: number
 
   @ApiProperty({type: String})
   @IsOptional()
-  order_by?: 'start_date' | 'updated_at'
+  dist_code?: string
+
+  @ApiProperty({type: String})
+  @IsOptional()
+  pref_code?: string
+
+  @ApiProperty({type: String})
+  @IsOptional()
+  order_by?: 'price_per_day' | 'num_star' | 'num_trip'
 
   @ApiProperty({type: String})
   @IsOptional()

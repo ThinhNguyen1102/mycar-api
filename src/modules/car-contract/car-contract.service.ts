@@ -30,9 +30,13 @@ export class CarContractService {
   ) {}
 
   async getAllCarContract(user: User, query: GetContractsQuery) {
-    let carContractsQuery = this.carContractRepository
-      .createQueryBuilder('cc')
-      .where('(cc.renter_id = :id OR cc.owner_id = :id)', {id: user.id})
+    let carContractsQuery = this.carContractRepository.createQueryBuilder('cc')
+
+    if (query.type === 'owner') {
+      carContractsQuery.where('cc.owner_id = :id', {id: user.id})
+    } else {
+      carContractsQuery.where('cc.renter_id = :id', {id: user.id})
+    }
 
     switch (query.status) {
       case CarContractStatus.WAITING_APPROVAL:
