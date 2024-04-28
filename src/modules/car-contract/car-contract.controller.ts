@@ -186,4 +186,23 @@ export class CarContractController {
   ) {
     return await this.carContractService.confirmPayment(contractId, user, tx_hash)
   }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SuccessRes,
+  })
+  @ApiOperation({
+    operationId: 'set-contract-in-progress',
+    summary: 'Set contract in progress',
+    description: 'Set contract in progress',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':contractId/in-progress')
+  async setContractInProgress(
+    @CurrentUser() user: User,
+    @Param() {contractId}: CarContractIdParam,
+  ) {
+    return await this.carContractService.setInProgress(contractId, user)
+  }
 }

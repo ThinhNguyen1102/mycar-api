@@ -12,9 +12,11 @@ import {CarRentalPostAddressRepository} from 'src/repositories/car-rental-post-a
 import {CarImageRepository} from 'src/repositories/car-image.repository'
 import {CarRentalPostFeatureRepository} from 'src/repositories/car-rental-post-feature.repository'
 import {CarRentalPostFeature} from 'src/entities/car-rental-post-feature.entity'
+import {CloudinaryModule} from '../cloudinary/cloudinary.module'
 
 @Module({
   imports: [
+    CloudinaryModule,
     TypeOrmModule.forFeature([
       CarRentalPost,
       CarFeature,

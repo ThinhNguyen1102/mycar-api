@@ -31,46 +31,28 @@ export class CarContractService {
 
   async getAllCarContract(user: User, query: GetContractsQuery) {
     let carContractsQuery = this.carContractRepository.createQueryBuilder('cc')
+    const selectStatuses = query?.status
+      ? query?.status.split(';').filter(status => {
+          return Object.values(CarContractStatus).includes(status as CarContractStatus)
+        })
+      : []
 
-    if (query.type === 'owner') {
-      carContractsQuery.where('cc.owner_id = :id', {id: user.id})
+    const selectTypes = query?.type
+      ? query?.type.split(';').filter(type => {
+          return ['owner', 'renter'].includes(type)
+        })
+      : []
+
+    if (selectTypes.length === 1) {
+      carContractsQuery.where(`cc.${selectTypes[0]}_id = :id`, {id: user.id})
     } else {
-      carContractsQuery.where('cc.renter_id = :id', {id: user.id})
+      carContractsQuery.where('(cc.renter_id = :id or cc.owner_id = :id)', {id: user.id})
     }
 
-    switch (query.status) {
-      case CarContractStatus.WAITING_APPROVAL:
-        carContractsQuery.andWhere('cc.contract_status = :status', {
-          status: CarContractStatus.WAITING_APPROVAL,
-        })
-        break
-      case CarContractStatus.REJECTED:
-        carContractsQuery.andWhere('cc.contract_status = :status', {
-          status: CarContractStatus.REJECTED,
-        })
-        break
-      case CarContractStatus.APPROVED:
-        carContractsQuery.andWhere('cc.contract_status = :status', {
-          status: CarContractStatus.APPROVED,
-        })
-        break
-      case CarContractStatus.CANCELED:
-        carContractsQuery.andWhere('cc.contract_status = :status', {
-          status: CarContractStatus.CANCELED,
-        })
-        break
-      case CarContractStatus.STARTED:
-        carContractsQuery.andWhere('cc.contract_status = :status', {
-          status: CarContractStatus.STARTED,
-        })
-        break
-      case CarContractStatus.ENDED:
-        carContractsQuery = carContractsQuery.andWhere('cc.contract_status = :status', {
-          status: CarContractStatus.ENDED,
-        })
-        break
-      default:
-        break
+    if (selectStatuses.length > 0) {
+      carContractsQuery.andWhere('cc.contract_status IN (:...statuses)', {
+        statuses: selectStatuses,
+      })
     }
 
     const count = await carContractsQuery.getCount()
@@ -607,5 +589,27 @@ export class CarContractService {
     })
 
     return new SuccessRes('Payment confirmed successfully!')
+  }
+
+  async setInProgress(contractId: number, user: User) {
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (!contract) {
+      throw new BadRequestException('Contract not found')
+    }
+
+    if (contract.owner_id !== user.id && contract.renter_id !== user.id) {
+      throw new BadRequestException('You are not the owner or renter of this contract')
+    }
+
+    contract.is_processing = false
+
+    await this.carContractRepository.save(contract)
+
+    return new SuccessRes('Contract in progress')
   }
 }
