@@ -14,6 +14,8 @@ import {ContractTxHistory} from 'src/entities/contract-tx-history.entity'
 import {ContractTxHistoryRepository} from 'src/repositories/contract-tx-history.repository'
 import {ContractFulfillment} from 'src/entities/contract-fulfillment.entity'
 import {ContractFulfillmentRepository} from 'src/repositories/contract-fulfillment.repository'
+import {NotificationRepository} from 'src/repositories/notification.repository'
+import {Notification} from 'src/entities/notification.entity'
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import {ContractFulfillmentRepository} from 'src/repositories/contract-fulfillme
       CarContract,
       ContractTxHistory,
       ContractFulfillment,
+      Notification,
     ]),
   ],
   controllers: [CarContractController],
@@ -35,6 +38,7 @@ import {ContractFulfillmentRepository} from 'src/repositories/contract-fulfillme
     CarContractRepository,
     ContractTxHistoryRepository,
     ContractFulfillmentRepository,
+    NotificationRepository,
   ],
   exports: [CarContractService],
 })

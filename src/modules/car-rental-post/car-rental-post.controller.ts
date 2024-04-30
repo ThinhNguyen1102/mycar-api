@@ -68,6 +68,10 @@ export class CarRentalPostController {
       }),
     )
 
+    files.forEach(file => {
+      this.cloudinaryService.clearFile(file.path)
+    })
+
     return cloudImages.map(cloudImage => cloudImage.secure_url)
   }
 

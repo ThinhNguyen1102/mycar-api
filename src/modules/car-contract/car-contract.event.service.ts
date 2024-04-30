@@ -25,6 +25,8 @@ import {ContractTransactionType} from 'src/common/enums/contract-tx-history.enum
 import {CALL_EVENTS, LISTEN_EVENTS} from 'src/common/constants/event.const'
 import {ContractFulfillmentRepository} from 'src/repositories/contract-fulfillment.repository'
 import {PusherService} from '../pusher/pusher.service'
+import {NotificationRepository} from 'src/repositories/notification.repository'
+import {Notification} from 'src/entities/notification.entity'
 
 @Injectable()
 export class CarContractEventService {
@@ -33,6 +35,7 @@ export class CarContractEventService {
     private readonly contractService: ContractService,
     private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
     private readonly contractFulfillmentRepository: ContractFulfillmentRepository,
+    private readonly notificationRepository: NotificationRepository,
     private readonly pusherService: PusherService,
   ) {}
 
@@ -70,6 +73,24 @@ export class CarContractEventService {
           created_at: tx.created_at,
         },
       })
+
+      const carContract = await this.carContractRepository.findOne({
+        where: {id: contract_id},
+      })
+
+      const newNotification = new Notification()
+      newNotification.user_id = carContract.renter_id
+      newNotification.title = 'Chủ xe đã từ chối hợp đồng'
+      newNotification.content = `Chủ xe đã từ chối hợp đồng ${carContract.id.toString().padStart(6, '0')} của bạn. Hợp đồng đã bị hủy.`
+      newNotification.is_read = false
+
+      const result = await this.notificationRepository.save(newNotification)
+
+      if (result) {
+        this.pusherService.trigger(`user-${carContract.renter_id}`, 'notification::new', {
+          newNotification,
+        })
+      }
     }
   }
 
@@ -103,6 +124,24 @@ export class CarContractEventService {
           created_at: tx.created_at,
         },
       })
+
+      const carContract = await this.carContractRepository.findOne({
+        where: {id: contract_id},
+      })
+
+      const newNotification = new Notification()
+      newNotification.user_id = carContract.renter_id
+      newNotification.title = 'Chủ xe đã hủy hợp đồng'
+      newNotification.content = `Chủ xe đã hủy hợp đồng ${carContract.id.toString().padStart(6, '0')} của bạn. Hợp đồng đã bị hủy.`
+      newNotification.is_read = false
+
+      const result = await this.notificationRepository.save(newNotification)
+
+      if (result) {
+        this.pusherService.trigger(`user-${carContract.renter_id}`, 'notification::new', {
+          newNotification,
+        })
+      }
     }
   }
 
@@ -136,6 +175,24 @@ export class CarContractEventService {
           created_at: tx.created_at,
         },
       })
+
+      const carContract = await this.carContractRepository.findOne({
+        where: {id: contract_id},
+      })
+
+      const newNotification = new Notification()
+      newNotification.user_id = carContract.owner_id
+      newNotification.title = 'Người thuê đã hủy hợp đồng'
+      newNotification.content = `Người thuê đã hủy hợp đồng ${carContract.id.toString().padStart(6, '0')}. Hợp đồng đã bị hủy.`
+      newNotification.is_read = false
+
+      const result = await this.notificationRepository.save(newNotification)
+
+      if (result) {
+        this.pusherService.trigger(`user-${carContract.owner_id}`, 'notification::new', {
+          newNotification,
+        })
+      }
     }
   }
 
@@ -202,6 +259,24 @@ export class CarContractEventService {
           created_at: tx.created_at,
         },
       })
+
+      const carContract = await this.carContractRepository.findOne({
+        where: {id: contract_id},
+      })
+
+      const newNotification = new Notification()
+      newNotification.user_id = carContract.owner_id
+      newNotification.title = 'Hợp đồng đã bắt đầu'
+      newNotification.content = `Hợp đồng ${carContract.id.toString().padStart(6, '0')} đã bắt đầu.`
+      newNotification.is_read = false
+
+      const result = await this.notificationRepository.save(newNotification)
+
+      if (result) {
+        this.pusherService.trigger(`user-${carContract.owner_id}`, 'notification::new', {
+          newNotification,
+        })
+      }
     }
   }
 
@@ -245,6 +320,24 @@ export class CarContractEventService {
           created_at: tx.created_at,
         },
       })
+
+      const carContract = await this.carContractRepository.findOne({
+        where: {id: contract_id},
+      })
+
+      const newNotification = new Notification()
+      newNotification.user_id = carContract.renter_id
+      newNotification.title = 'Hợp đồng đã kết thúc'
+      newNotification.content = `Hợp đồng ${carContract.id.toString().padStart(6, '0')} đã kết thúc.`
+      newNotification.is_read = false
+
+      const result = await this.notificationRepository.save(newNotification)
+
+      if (result) {
+        this.pusherService.trigger(`user-${carContract.renter_id}`, 'notification::new', {
+          newNotification,
+        })
+      }
     }
   }
 
@@ -281,6 +374,24 @@ export class CarContractEventService {
           created_at: tx.created_at,
         },
       })
+
+      const carContract = await this.carContractRepository.findOne({
+        where: {id: contract.contract_id},
+      })
+
+      const newNotification = new Notification()
+      newNotification.user_id = carContract.renter_id
+      newNotification.title = 'Chủ xe đã đồng ý hợp đồng'
+      newNotification.content = `Chủ xe đã đồng ý hợp đồng ${carContract.id.toString().padStart(6, '0')} của bạn. Hợp đồng đã được tạo thành công.`
+      newNotification.is_read = false
+
+      const result = await this.notificationRepository.save(newNotification)
+
+      if (result) {
+        this.pusherService.trigger(`user-${carContract.renter_id}`, 'notification::new', {
+          newNotification,
+        })
+      }
     }
   }
 

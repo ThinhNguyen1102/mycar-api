@@ -1,4 +1,4 @@
-import {Controller, Get, HttpStatus, UseGuards} from '@nestjs/common'
+import {Controller, Get, HttpStatus, Post, UseGuards} from '@nestjs/common'
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger'
 import {UserService} from './user.service'
 import {JwtAuthGuard} from 'src/common/guards/jwt-auth.guard'
@@ -23,5 +23,35 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   async getProfile(@CurrentUser() user: User) {
     return user
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'get-notification',
+    summary: 'Get notification',
+    description: 'Get notification',
+  })
+  @Get('notifications')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async getNotification(@CurrentUser() user: User) {
+    return await this.userService.getNotification(user.id)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+  })
+  @ApiOperation({
+    operationId: 'set-is-read-notifications',
+    summary: 'Set is read notifications',
+    description: 'Set is read notifications',
+  })
+  @Post('notifications/read')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async setIsReadNotifications(@CurrentUser() user: User) {
+    return await this.userService.setIsReadNotification(user.id)
   }
 }
