@@ -27,6 +27,7 @@ import {ContractFulfillmentRepository} from 'src/repositories/contract-fulfillme
 import {PusherService} from '../pusher/pusher.service'
 import {NotificationRepository} from 'src/repositories/notification.repository'
 import {Notification} from 'src/entities/notification.entity'
+import {NotificationType} from 'src/common/enums/notification.enum'
 
 @Injectable()
 export class CarContractEventService {
@@ -83,6 +84,8 @@ export class CarContractEventService {
       newNotification.title = 'Chủ xe đã từ chối hợp đồng'
       newNotification.content = `Chủ xe đã từ chối hợp đồng ${carContract.id.toString().padStart(6, '0')} của bạn. Hợp đồng đã bị hủy.`
       newNotification.is_read = false
+      newNotification.contract_id = contract_id
+      newNotification.type = NotificationType.ERROR
 
       const result = await this.notificationRepository.save(newNotification)
 
@@ -134,6 +137,8 @@ export class CarContractEventService {
       newNotification.title = 'Chủ xe đã hủy hợp đồng'
       newNotification.content = `Chủ xe đã hủy hợp đồng ${carContract.id.toString().padStart(6, '0')} của bạn. Hợp đồng đã bị hủy.`
       newNotification.is_read = false
+      newNotification.contract_id = contract_id
+      newNotification.type = NotificationType.ERROR
 
       const result = await this.notificationRepository.save(newNotification)
 
@@ -185,6 +190,8 @@ export class CarContractEventService {
       newNotification.title = 'Người thuê đã hủy hợp đồng'
       newNotification.content = `Người thuê đã hủy hợp đồng ${carContract.id.toString().padStart(6, '0')}. Hợp đồng đã bị hủy.`
       newNotification.is_read = false
+      newNotification.contract_id = contract_id
+      newNotification.type = NotificationType.ERROR
 
       const result = await this.notificationRepository.save(newNotification)
 
@@ -269,6 +276,8 @@ export class CarContractEventService {
       newNotification.title = 'Hợp đồng đã bắt đầu'
       newNotification.content = `Hợp đồng ${carContract.id.toString().padStart(6, '0')} đã bắt đầu.`
       newNotification.is_read = false
+      newNotification.contract_id = contract_id
+      newNotification.type = NotificationType.INFO
 
       const result = await this.notificationRepository.save(newNotification)
 
@@ -330,6 +339,8 @@ export class CarContractEventService {
       newNotification.title = 'Hợp đồng đã kết thúc'
       newNotification.content = `Hợp đồng ${carContract.id.toString().padStart(6, '0')} đã kết thúc.`
       newNotification.is_read = false
+      newNotification.contract_id = contract_id
+      newNotification.type = NotificationType.SUCCESS
 
       const result = await this.notificationRepository.save(newNotification)
 
@@ -384,6 +395,8 @@ export class CarContractEventService {
       newNotification.title = 'Chủ xe đã đồng ý hợp đồng'
       newNotification.content = `Chủ xe đã đồng ý hợp đồng ${carContract.id.toString().padStart(6, '0')} của bạn. Hợp đồng đã được tạo thành công.`
       newNotification.is_read = false
+      newNotification.contract_id = contract.contract_id
+      newNotification.type = NotificationType.SUCCESS
 
       const result = await this.notificationRepository.save(newNotification)
 

@@ -18,6 +18,10 @@ import {EventEmitter2} from '@nestjs/event-emitter'
 import {CALL_EVENTS} from 'src/common/constants/event.const'
 import {GetContractsQuery} from './dto/get-contracts.query'
 import {paginateResponse} from 'src/utils/helpers'
+import {Notification} from 'src/entities/notification.entity'
+import {NotificationRepository} from 'src/repositories/notification.repository'
+import {PusherService} from '../pusher/pusher.service'
+import {NotificationType} from 'src/common/enums/notification.enum'
 
 @Injectable()
 export class CarContractService {
@@ -27,6 +31,8 @@ export class CarContractService {
     private readonly carContractRepository: CarContractRepository,
     private readonly contractTxHistoryRepository: ContractTxHistoryRepository,
     private readonly eventEmitter: EventEmitter2,
+    private readonly notificationRepository: NotificationRepository,
+    private readonly pusherService: PusherService,
   ) {}
 
   async getAllCarContract(user: User, query: GetContractsQuery) {
@@ -576,6 +582,22 @@ export class CarContractService {
       this.eventEmitter.emit(CALL_EVENTS.CREATE_CAR_CONTRACT, carContractSm)
 
       carContract.is_processing = true
+    } else {
+      const newNotification = new Notification()
+      newNotification.user_id = carContract.owner_id
+      newNotification.title = 'Bạn có đề xuất hợp đồng mới'
+      newNotification.content = `${user.username} đã gửi yêu cầu thuê xe của bạn`
+      newNotification.is_read = false
+      newNotification.contract_id = carContract.id
+      newNotification.type = NotificationType.WARNING
+
+      const result = await this.notificationRepository.save(newNotification)
+
+      if (result) {
+        this.pusherService.trigger(`user-${carContract.owner_id}`, 'notification::new', {
+          newNotification,
+        })
+      }
     }
 
     await this.carContractRepository.save(carContract)
