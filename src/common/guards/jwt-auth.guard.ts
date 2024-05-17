@@ -9,11 +9,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest(err: any, user: any, info: any) {
     if (err || !user || info) {
-      if (info.message === 'jwt expired') {
+      if (info?.message === 'jwt expired') {
         throw new HttpException('Token expired', 419)
       }
 
-      throw err || new UnauthorizedException(info.message)
+      throw err || new UnauthorizedException(info?.message)
     }
 
     return user

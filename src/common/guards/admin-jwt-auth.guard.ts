@@ -9,7 +9,7 @@ export class AdminJwtAuthGuard extends AuthGuard('admin-jwt') {
 
   handleRequest(err: any, admin: any, info: any) {
     if (err || !admin) {
-      throw err || new UnauthorizedException(info.message)
+      throw err || new UnauthorizedException(info?.message)
     }
 
     return admin
