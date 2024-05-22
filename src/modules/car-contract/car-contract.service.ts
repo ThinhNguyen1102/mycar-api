@@ -61,7 +61,9 @@ export class CarContractService {
       })
     }
 
-    const count = await carContractsQuery.getCount()
+    const count = await carContractsQuery
+      .andWhere('cc.renter_wallet_address IS NOT NULL')
+      .getCount()
 
     if (query.order_by === 'updated_at') {
       carContractsQuery.orderBy('cc.updated_at', query.order || 'ASC')
