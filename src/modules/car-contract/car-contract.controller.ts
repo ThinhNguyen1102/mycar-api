@@ -1,4 +1,14 @@
-import {Body, Controller, Get, HttpStatus, Param, Post, Query, UseGuards} from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger'
 import {CarContractService} from './car-contract.service'
 import {JwtAuthGuard} from 'src/common/guards/jwt-auth.guard'
@@ -204,5 +214,21 @@ export class CarContractController {
     @Param() {contractId}: CarContractIdParam,
   ) {
     return await this.carContractService.setInProgress(contractId, user)
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: SuccessRes,
+  })
+  @ApiOperation({
+    operationId: 'delete-contract',
+    summary: 'Delete contract',
+    description: 'Delete contract',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Delete(':contractId/temp')
+  async deleteTempContract(@CurrentUser() user: User, @Param() {contractId}: CarContractIdParam) {
+    return await this.carContractService.deleteTempContract(contractId, user)
   }
 }

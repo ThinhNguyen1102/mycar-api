@@ -634,4 +634,28 @@ export class CarContractService {
 
     return new SuccessRes('Contract in progress')
   }
+
+  async deleteTempContract(contractId: number, user: User) {
+    const contract = await this.carContractRepository.findOne({
+      where: {
+        id: contractId,
+      },
+    })
+
+    if (!contract) {
+      throw new BadRequestException('Contract not found')
+    }
+
+    if (contract.renter_id !== user.id) {
+      throw new BadRequestException('invalid user')
+    }
+
+    if (contract.renter_wallet_address || contract.owner_wallet_address) {
+      throw new BadRequestException('invalid contract')
+    }
+
+    await this.carContractRepository.delete(contractId)
+
+    return new SuccessRes('Contract deleted successfully')
+  }
 }
